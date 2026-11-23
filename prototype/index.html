@@ -1,0 +1,803 @@
+<title>HouseCheck AI 2.0</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: navy sidebar + warm workspace; white cards with large radii; orange accent (HouseCheck AI / NGIJIH tokens) */
+:root{
+  --bg:#FFF6EE; --surface:#FFFFFF; --muted:#FFF4EA; --text:#17233F; --text-2:#7A8498; --text-3:#A3ABBB;
+  --accent:#F28A3C; --accent-2:#FFB37A; --accent-soft:#FFE6D2; --border:#F0E3D8; --border-2:#E4D2C3; --grid:#F6ECE4;
+  --nav:#17233F; --nav-2:#22305A; --nav-muted:#9AA6C0; --on-dark:#FFFFFF; --on-dark-2:#C9D2E6;
+  --pos:#3F9B5A; --pos-soft:#DDF3E3; --warn:#D9822B; --warn-soft:#FFF0DC; --danger:#E0584B; --danger-soft:#FDE3E0;
+  --sky:#DCEEFF; --mint:#DBF5E6; --lilac:#ECE6FF; --land:#F7EFE6; --park:#D9EFD3; --water:#B9DCF5; --road:#FFFFFF;
+  --shadow:0 10px 28px rgba(138,90,58,.10); --shadow-h:0 18px 40px rgba(138,90,58,.18); --float:0 18px 44px rgba(23,35,63,.28);
+  --font:"Poppins","Segoe UI",system-ui,-apple-system,sans-serif;
+  --r-lg:24px; --r-md:18px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1426; --surface:#1A2140; --muted:#212A4D; --text:#F4F6FF; --text-2:#A6B0C9; --text-3:#6E7898;
+  --accent-soft:#3B2A2A; --border:#2A3358; --border-2:#36406A; --grid:#263056; --nav:#0A0F1F; --nav-2:#161D38;
+  --pos:#7FD99A; --pos-soft:#1C3A2A; --warn:#F4B36E; --warn-soft:#3A2E1E; --danger-soft:#3D2026;
+  --sky:#1F3352; --mint:#1D3A2E; --lilac:#2B2850; --land:#1A2140; --park:#1F3A33; --water:#24446B; --road:#283160;
+  --shadow:0 10px 28px rgba(0,0,0,.35); --shadow-h:0 18px 40px rgba(0,0,0,.5); color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0F1426; --surface:#1A2140; --muted:#212A4D; --text:#F4F6FF; --text-2:#A6B0C9; --text-3:#6E7898;
+  --accent-soft:#3B2A2A; --border:#2A3358; --border-2:#36406A; --grid:#263056; --nav:#0A0F1F; --nav-2:#161D38;
+  --pos:#7FD99A; --pos-soft:#1C3A2A; --warn:#F4B36E; --warn-soft:#3A2E1E; --danger-soft:#3D2026;
+  --sky:#1F3352; --mint:#1D3A2E; --lilac:#2B2850; --land:#1A2140; --park:#1F3A33; --water:#24446B; --road:#283160;
+  --shadow:0 10px 28px rgba(0,0,0,.35); --shadow-h:0 18px 40px rgba(0,0,0,.5); color-scheme:dark }
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+input,select,textarea{font:inherit;color:var(--text)}
+:focus-visible{outline:2.5px solid var(--accent);outline-offset:2px}
+.ic{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- shell ---------- */
+.app{display:grid;grid-template-columns:248px minmax(0,1fr);height:100%}
+.side{background:linear-gradient(180deg,var(--nav-2),var(--nav));color:var(--on-dark);display:flex;flex-direction:column;gap:4px;padding:24px 16px 18px;position:relative;overflow:hidden}
+.side::after{content:"";position:absolute;right:-90px;top:-90px;width:200px;height:200px;border-radius:50%;background:rgba(242,138,60,.12);pointer-events:none}
+.brand{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.mark{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--accent-2),var(--accent));display:grid;place-items:center;color:#fff;box-shadow:0 6px 16px rgba(242,138,60,.35)}
+.mark .ic{width:22px;height:22px}
+.brand b{display:block;font-size:17px;font-weight:800;letter-spacing:-.2px}
+.brand small{color:var(--nav-muted);font-size:11px;font-weight:600}
+.sec-label{color:var(--nav-muted);font-size:10px;font-weight:800;letter-spacing:.12em;margin:8px 4px 4px}
+.nav{display:flex;align-items:center;gap:12px;height:44px;padding:0 12px 0 14px;border-radius:14px;color:var(--nav-muted);font-weight:600;font-size:13px;position:relative;transition:color .2s,background .2s;text-align:left}
+.nav:hover{background:rgba(255,255,255,.07);color:#fff}
+.nav .ic{width:20px;height:20px}
+.nav.active{color:#fff;background:linear-gradient(90deg,var(--accent),var(--accent-2));box-shadow:0 8px 20px rgba(242,138,60,.28)}
+.nav .cnt{margin-left:auto;background:var(--accent);color:#fff;font-size:11px;font-weight:800;border-radius:10px;padding:1px 8px;min-width:24px;text-align:center;transition:transform .25s}
+.nav.active .cnt{background:#fff;color:var(--accent)}
+.nav .cnt.bump{transform:scale(1.35)}
+.promo{margin-top:auto;background:linear-gradient(135deg,var(--accent-2),var(--accent));border-radius:22px;padding:14px 10px 14px 16px;display:flex;align-items:center;gap:6px;text-align:left;color:#fff;transition:transform .2s,box-shadow .2s}
+.promo:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(242,138,60,.4)}
+.promo b{font-size:13px;font-weight:800;line-height:1.3}
+.promo span{display:block;font-size:11px;color:#FFF3E8;margin-top:2px}
+.side-note{color:var(--nav-muted);font-size:10px;line-height:1.45;margin-top:10px}
+
+.main{display:flex;flex-direction:column;min-width:0;height:100%}
+.top{height:72px;flex:none;display:flex;align-items:center;gap:12px;padding:0 max(24px,env(safe-area-inset-right,0px)) 0 32px;border-bottom:1px solid var(--border);background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(10px);position:relative;z-index:5}
+.searchbtn{flex:1;max-width:520px;height:46px;border-radius:23px;border:1.5px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:10px;padding:0 8px 0 18px;color:var(--text-3);transition:border-color .2s,box-shadow .2s}
+.searchbtn:hover{border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 14%,transparent)}
+.searchbtn span{flex:1;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+kbd{font:700 11px var(--font);background:var(--muted);color:var(--text-2);border-radius:8px;padding:5px 9px}
+.spacer{flex:1}
+.seg{display:inline-flex;gap:2px;padding:4px;border-radius:20px;background:var(--muted);border:1px solid var(--border);position:relative}
+.seg button{position:relative;z-index:1;height:30px;min-width:38px;padding:0 12px;border-radius:15px;font-size:12px;font-weight:600;color:var(--text-2);display:grid;place-items:center;transition:color .2s}
+.seg button.on{color:#fff}
+.seg .knob{position:absolute;top:4px;height:30px;border-radius:15px;background:var(--accent);transition:left .3s cubic-bezier(.2,.8,.2,1),width .3s;box-shadow:0 4px 12px rgba(242,138,60,.35)}
+.seg .ic{width:16px;height:16px}
+.user{display:flex;align-items:center;gap:10px}
+.avatar{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:14px;background:linear-gradient(135deg,var(--accent-2),var(--accent));flex:none}
+.user b{display:block;font-size:13px}.user small{color:var(--text-2);font-size:11px;font-weight:500}
+.iconbtn{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;transition:background .2s,color .2s}
+.iconbtn:hover{background:var(--accent-soft);color:var(--accent)}
+
+.view{flex:1;overflow-y:auto;overflow-x:hidden;padding:28px max(36px,env(safe-area-inset-right,0px)) 120px max(36px,env(safe-area-inset-left,0px))}
+.view>.page{animation:enter .45s cubic-bezier(.2,.8,.2,1) both;display:flex;flex-direction:column;gap:20px;max-width:1400px;margin:0 auto}
+@keyframes enter{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+.stagger>*{animation:enter .5s cubic-bezier(.2,.8,.2,1) both}
+.stagger>*:nth-child(2){animation-delay:.05s}.stagger>*:nth-child(3){animation-delay:.1s}.stagger>*:nth-child(4){animation-delay:.15s}.stagger>*:nth-child(5){animation-delay:.2s}.stagger>*:nth-child(6){animation-delay:.25s}.stagger>*:nth-child(n+7){animation-delay:.3s}
+
+/* ---------- primitives ---------- */
+h1{font-size:30px;font-weight:800;letter-spacing:-.5px;margin:0;text-wrap:balance}
+h2{font-size:19px;font-weight:800;margin:0}
+.sub{color:var(--text-2);margin:4px 0 0;font-size:14px}
+.head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.head>div:first-child{flex:1;min-width:220px}
+.btn{height:40px;display:inline-flex;align-items:center;gap:8px;padding:0 18px;border-radius:20px;font-weight:600;font-size:13px;white-space:nowrap;transition:transform .12s,background .2s,box-shadow .2s,border-color .2s,color .2s}
+.btn:active{transform:scale(.96)}
+.btn.primary{background:var(--accent);color:#fff;box-shadow:0 6px 18px rgba(242,138,60,.35)}
+.btn.primary:hover{background:#E5782A;box-shadow:0 10px 24px rgba(242,138,60,.45)}
+.btn.secondary{background:var(--surface);border:1.2px solid var(--border)}
+.btn.secondary:hover{border-color:var(--accent);background:var(--muted)}
+.btn.soft{background:var(--accent-soft);color:var(--accent)}
+.btn.soft:hover{background:color-mix(in srgb,var(--accent) 22%,var(--accent-soft))}
+.btn.dark{background:var(--nav);color:#fff}
+.btn.glass{background:rgba(255,255,255,.12);color:#fff}
+.btn.glass:hover{background:rgba(255,255,255,.22)}
+.btn.ghost:hover{background:var(--accent-soft);color:var(--accent)}
+.btn.danger{background:var(--danger-soft);color:var(--danger)}
+.btn.lg{height:50px;padding:0 24px;font-size:15px;border-radius:25px}
+.btn.sm{height:34px;padding:0 14px;font-size:12px}
+.chip{height:34px;padding:0 14px;border-radius:17px;border:1px solid var(--border);background:var(--surface);font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;transition:background .2s,color .2s,border-color .2s}
+.chip:hover{border-color:var(--accent)}
+.chip.on{background:var(--nav);color:#fff;border-color:var(--nav)}
+:root[data-theme="dark"] .chip.on{background:var(--accent);border-color:var(--accent)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .chip.on{background:var(--accent);border-color:var(--accent)}}
+.chip .ic{width:15px;height:15px}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;border-radius:10px;padding:3px 10px;background:var(--accent-soft);color:var(--accent);white-space:nowrap}
+.badge.pos{background:var(--pos-soft);color:var(--pos)}.badge.warn{background:var(--warn-soft);color:var(--warn)}
+.badge.neutral{background:var(--muted);color:var(--text-2)}.badge.light{background:#fff;color:#17233F}.badge.navy{background:#17233F;color:#fff}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow);transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s,border-color .25s}
+.card.hover:hover{transform:translateY(-4px);box-shadow:var(--shadow-h);border-color:color-mix(in srgb,var(--accent) 45%,var(--border))}
+.dark-card{background:linear-gradient(135deg,var(--nav-2),var(--nav));color:#fff;border-radius:26px;box-shadow:var(--float);position:relative;overflow:hidden}
+.dark-card::before{content:"";position:absolute;right:-60px;top:-60px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.06);pointer-events:none}
+.bubble{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;flex:none;background:var(--accent-soft);color:var(--accent)}
+.bubble .ic{width:22px;height:22px}
+.grid{display:grid;gap:20px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.tnum{font-variant-numeric:tabular-nums}
+
+/* ring */
+.ring{position:relative;display:grid;place-items:center;flex:none}
+.ring svg{transform:rotate(-90deg)}
+.ring .trk{stroke:var(--grid)}
+.ring .val{transition:stroke-dashoffset 1.1s cubic-bezier(.2,.8,.2,1)}
+.ring b{position:absolute;font-weight:800;letter-spacing:-.5px}
+.ring small{position:absolute;bottom:22%;font-size:10px;font-weight:600;color:var(--text-2)}
+.dark-card .ring .trk{stroke:rgba(255,255,255,.16)}
+.dark-card .ring small{color:var(--on-dark-2)}
+
+/* complex card */
+.dev{padding:12px 12px 16px;display:flex;flex-direction:column;gap:12px;cursor:pointer;position:relative}
+.dev.sel{border-color:var(--accent);border-width:2px;padding:11px 11px 15px}
+.cover{position:relative;border-radius:var(--r-md);overflow:hidden;height:150px;background:var(--accent-soft)}
+.cover canvas{width:100%;height:100%;display:block;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.dev:hover .cover canvas{transform:scale(1.05)}
+.cover .tl{position:absolute;left:12px;top:12px}
+.fav{position:absolute;right:12px;top:12px;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.3);color:#fff;backdrop-filter:blur(4px);transition:transform .2s,background .2s}
+.fav:hover{transform:scale(1.12)}
+.fav.on{background:var(--accent)}
+.fav.on .ic{fill:#fff}
+.fav.pop{animation:pop .4s}
+@keyframes pop{40%{transform:scale(1.35)}}
+.dev .row{display:flex;align-items:center;gap:10px;padding:0 4px}
+.dev .name{font-size:17px;font-weight:800;line-height:1.25}
+.dev .addr{color:var(--text-2);font-size:12px;margin-top:2px}
+.dev .rv{color:var(--accent);font-size:12px;font-weight:600}
+.dev .pl{font-size:10px;color:var(--text-2);font-weight:500}
+.dev .pv{font-weight:800;font-size:14px}
+.stars{display:inline-flex;gap:1px;color:#F5A524}
+.stars .ic{width:13px;height:13px;stroke-width:1.6}
+.stars .f{fill:#F5A524}
+.stars .e{color:var(--border-2)}
+.dev .foot{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 4px}
+.match{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;color:var(--text-2);padding:0 4px}
+.bar{flex:1;height:7px;border-radius:4px;background:var(--grid);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent-2),var(--accent));width:0;transition:width 1s cubic-bezier(.2,.8,.2,1)}
+
+/* home */
+.hero{padding:32px 30px 30px 36px;display:flex;align-items:center;gap:20px}
+.hero h1{font-size:34px;color:#fff;margin:12px 0 10px}
+.hero p{color:var(--on-dark-2);font-size:15px;line-height:1.6;max-width:620px;margin:0 0 20px}
+.hero .ctas{display:flex;gap:10px;flex-wrap:wrap}
+.hero .mascot{width:190px;height:190px;flex:none}
+.stats{display:grid;gap:16px;grid-template-columns:repeat(4,minmax(0,1fr))}
+.stat{display:flex;align-items:center;gap:14px;padding:18px 20px}
+.stat b{display:block;font-size:28px;font-weight:800;letter-spacing:-.5px;line-height:1.1}
+.stat small{color:var(--text-2);font-size:12px;font-weight:500}
+
+/* review */
+.rev{padding:18px 20px;display:flex;flex-direction:column;gap:10px}
+.rev .hd{display:flex;align-items:center;gap:10px}
+.rev .hd b{display:block;font-size:14px}
+.rev .hd small{color:var(--text-2);font-size:11px}
+.rev p{margin:0;line-height:1.6;font-size:13px}
+.rev .ft{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.link{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;border-radius:10px;padding:3px 6px;transition:color .2s,background .2s}
+.link:hover{color:var(--accent);background:var(--accent-soft)}
+.link .ic{width:15px;height:15px}
+
+/* filters */
+.filters{padding:16px;display:flex;flex-direction:column;gap:12px}
+.frow{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.field{flex:1;min-width:220px;height:46px;border-radius:23px;border:1.5px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:10px;padding:0 16px;color:var(--text-3);transition:border-color .2s,box-shadow .2s}
+.field:focus-within{border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent)}
+.field input{flex:1;border:0;outline:0;background:none;font-size:14px;font-weight:500;min-width:0}
+select.sel{height:46px;border-radius:14px;border:1.5px solid var(--border);background:var(--surface);padding:0 14px;font-weight:600;font-size:13px;outline:none}
+select.sel:focus{border-color:var(--accent)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chips .lbl{font-size:12px;font-weight:700;color:var(--text-2);margin-right:2px}
+.found{color:var(--text-2);font-weight:600;font-size:13px;margin:0 4px}
+
+.tray{position:fixed;left:calc(248px + (100% - 248px)/2);transform:translate(-50%,140%);bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:20;display:flex;align-items:center;gap:12px;padding:12px 12px 12px 18px;border-radius:24px;background:linear-gradient(135deg,#22305A,#17233F);color:#fff;box-shadow:var(--float);transition:transform .45s cubic-bezier(.3,1.4,.5,1)}
+.tray.show{transform:translate(-50%,0)}
+.tray b{min-width:150px;font-size:14px}
+.tray .bubble{background:#2B3A6B;color:var(--accent-2);width:40px;height:40px}
+
+/* detail */
+.dhero{padding:12px;display:flex;flex-direction:column;gap:12px}
+.dcover{position:relative;height:280px;border-radius:22px;overflow:hidden}
+.dcover canvas{width:100%;height:100%;display:block}
+.dcover .over{position:absolute;inset:0;display:flex;flex-direction:column;padding:18px 22px 22px;color:#fff;background:linear-gradient(180deg,rgba(0,0,0,0) 40%,rgba(0,0,0,.35))}
+.dcover .tb{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.dcover h1{color:#fff;font-size:38px;margin-top:auto;text-shadow:0 2px 12px rgba(0,0,0,.25)}
+.dcover p{margin:4px 0 0;font-weight:500;opacity:.95}
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:4px 8px 2px}
+.cols{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:20px;align-items:start}
+.col{display:flex;flex-direction:column;gap:20px;min-width:0}
+.score{padding:24px}
+.score .rings{display:flex;gap:16px;align-items:center;margin-bottom:12px}
+.score h2{color:#fff}
+.score p{color:var(--on-dark-2);margin:6px 0 0;line-height:1.5}
+.pad{padding:20px 22px;display:flex;flex-direction:column;gap:12px}
+.meter{display:grid;grid-template-columns:24px 120px minmax(0,1fr) 34px;align-items:center;gap:10px;font-size:13px;font-weight:600}
+.meter .ic{color:var(--text-2)}
+.meter b{text-align:right;font-weight:800}
+.meter .bar{height:8px}
+.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.fact{display:flex;align-items:center;gap:10px}
+.fact .bubble{width:38px;height:38px;border-radius:12px;background:var(--muted)}
+.fact .bubble .ic{width:18px;height:18px}
+.fact small{display:block;color:var(--text-2);font-size:11px;font-weight:600}
+.fact b{font-size:15px;font-weight:800}
+textarea.note{width:100%;min-height:110px;resize:vertical;border-radius:16px;border:1.5px solid var(--border);background:var(--muted);padding:12px 14px;font-size:13px;line-height:1.5;outline:none}
+textarea.note:focus{border-color:var(--accent)}
+
+/* map */
+.maplay{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;min-height:600px}
+.mapbox{padding:8px;position:relative;min-height:520px}
+.mapsvg{width:100%;height:100%;min-height:500px;border-radius:20px;display:block;background:var(--land);touch-action:none;cursor:grab}
+.mapsvg:active{cursor:grabbing}
+.pin{cursor:pointer}
+.pin .head{transition:transform .25s cubic-bezier(.3,1.5,.5,1);transform-box:fill-box;transform-origin:50% 100%}
+.pin:hover .head,.pin.on .head{transform:scale(1.25)}
+.pin.on .pulse{animation:pulse 1.6s infinite}
+@keyframes pulse{from{r:6;opacity:.55}to{r:30;opacity:0}}
+.tip{position:absolute;pointer-events:none;background:var(--nav);color:#fff;border-radius:14px;padding:10px 14px;box-shadow:var(--float);transform:translate(-50%,calc(-100% - 46px));white-space:nowrap;transition:opacity .15s}
+.tip b{display:block;font-size:14px}.tip small{color:var(--nav-muted);font-size:11px}
+.legend{position:absolute;left:24px;bottom:24px;background:color-mix(in srgb,var(--surface) 92%,transparent);border-radius:16px;padding:7px 14px;display:flex;gap:14px;font-size:11px;font-weight:700;color:var(--text-2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.zoom{position:absolute;right:24px;top:24px;display:flex;flex-direction:column;gap:6px}
+.zoom button{width:38px;height:38px;border-radius:12px;background:var(--surface);box-shadow:var(--shadow);font-size:18px;font-weight:700}
+.mlist{padding:10px;display:flex;flex-direction:column;gap:2px;overflow:auto;max-height:420px}
+.mitem{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;font-weight:600;font-size:13px;text-align:left;transition:background .2s}
+.mitem:hover,.mitem.on{background:var(--accent-soft)}
+.mitem .dot{width:10px;height:10px;border-radius:50%;flex:none}
+.mitem span{flex:1}
+
+/* compare */
+.cmp{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.cmpcol{padding:12px 12px 16px;display:flex;flex-direction:column;gap:10px}
+.cmpcol.win{border:2px solid var(--accent);padding:11px 11px 15px}
+.cmpcol .cover{height:130px}
+.cmpcol h3{margin:0;text-align:center;font-size:18px;font-weight:800}
+.cmpcol .c-sub{text-align:center;color:var(--text-2);font-size:12px;margin-top:-6px}
+.mrow{display:flex;align-items:center;gap:10px;font-size:13px;padding:0 4px}
+.mrow .bubble{width:30px;height:30px;border-radius:10px;background:var(--muted);color:var(--text-2)}
+.mrow .bubble .ic{width:15px;height:15px}
+.mrow span{flex:1;color:var(--text-2);font-weight:600}
+.mrow b{font-weight:800}
+.mrow.best .bubble{background:var(--pos-soft);color:var(--pos)}
+.mrow.best b{color:var(--pos)}
+.hr{height:1px;background:var(--border);margin:2px 0}
+.slot{border:2px dashed var(--border-2);border-radius:var(--r-lg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--text-2);font-weight:700;min-height:300px;transition:border-color .2s,color .2s,background .2s}
+.slot:hover{border-color:var(--accent);color:var(--accent);background:var(--muted)}
+
+/* comfort */
+.presets{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.preset{display:flex;align-items:center;gap:10px;padding:14px 16px;font-weight:700;font-size:13px;text-align:left}
+.preset.on{border-color:var(--accent);background:var(--muted)}
+.crit{display:grid;gap:18px 28px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.crit label{display:flex;align-items:center;gap:8px;font-weight:600;font-size:13px;margin-bottom:8px}
+.crit label .bubble{width:30px;height:30px;border-radius:10px;background:var(--muted)}
+.crit label .bubble .ic{width:15px;height:15px}
+.crit label b{margin-left:auto;color:var(--accent);font-size:15px;font-weight:800;min-width:14px;text-align:right}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:4px;background:linear-gradient(90deg,var(--accent-2),var(--accent)) 0/var(--p,0%) 100% no-repeat,var(--grid);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid var(--accent);box-shadow:0 2px 8px rgba(242,138,60,.4);cursor:pointer;transition:transform .15s}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.15)}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--accent);cursor:pointer}
+.comfort-lay{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:20px;align-items:start}
+.live{padding:22px;display:flex;flex-direction:column;gap:8px;position:sticky;top:0}
+.live h2{color:#fff}.live p{color:var(--on-dark-2);margin:2px 0 8px;font-size:12px}
+.lrow{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:14px;background:rgba(255,255,255,.07);font-weight:700;font-size:13px;color:#fff;text-align:left;transition:background .2s,transform .35s cubic-bezier(.2,.8,.2,1)}
+.lrow:hover{background:rgba(255,255,255,.14)}
+.lrow span{flex:1}.lrow em{font-style:normal;color:var(--accent-2);font-weight:800}
+
+/* chat */
+.chat-lay{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;height:calc(100vh - 72px - 56px);min-height:520px}
+.chat{display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.chat .ch{display:flex;align-items:center;gap:12px;padding:14px 18px 12px 20px;border-bottom:1px solid var(--border)}
+.chat .ch b{display:block;font-size:17px}
+.chat .ch small{color:var(--pos);font-size:12px;font-weight:600}
+.msgs{flex:1;overflow-y:auto;padding:18px 22px;display:flex;flex-direction:column;gap:12px;min-height:0}
+.msg{display:flex;gap:10px;align-items:flex-end;animation:enter .35s cubic-bezier(.2,.8,.2,1) both}
+.msg.me{justify-content:flex-end}
+.msg .bub{max-width:min(560px,80%);padding:12px 18px;border-radius:20px;line-height:1.55;font-size:14px;white-space:pre-wrap;font-weight:500}
+.msg.bot .bub{background:var(--surface);border:1px solid var(--border);border-bottom-left-radius:6px}
+.msg.me .bub{background:linear-gradient(135deg,var(--accent-2),var(--accent));color:#fff;border-bottom-right-radius:6px}
+.msg .mini{width:38px;height:38px;flex:none}
+.minicards{display:flex;gap:10px;flex-wrap:wrap;padding-left:48px;animation:enter .4s both}
+.mc{display:flex;align-items:center;gap:10px;padding:8px 12px 8px 8px;border-radius:18px;text-align:left;width:250px;max-width:100%}
+.mc canvas{width:48px;height:48px;border-radius:12px;flex:none}
+.mc div{flex:1;min-width:0}
+.mc b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mc small{color:var(--text-2);font-size:11px;font-weight:600}
+.typing{display:inline-flex;gap:5px;padding:16px 18px!important}
+.typing i{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:dot 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes dot{0%,80%,100%{transform:translateY(0);opacity:.5}40%{transform:translateY(-6px);opacity:1}}
+.qchips{display:flex;gap:8px;flex-wrap:wrap;padding:6px 22px}
+.inbar{padding:8px 16px 16px 22px}
+.inpill{display:flex;align-items:center;gap:6px;height:56px;border-radius:28px;background:var(--muted);border:1.5px solid var(--border);padding:0 6px 0 20px;transition:border-color .2s,box-shadow .2s}
+.inpill:focus-within{border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 14%,transparent)}
+.inpill input{flex:1;border:0;outline:0;background:none;font-size:14px;font-weight:500;min-width:0}
+.send{width:44px;height:44px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;transition:transform .15s,box-shadow .2s}
+.send:hover{transform:scale(1.07);box-shadow:0 8px 20px rgba(242,138,60,.45)}
+.aside{padding:22px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.aside .mascot{width:150px;height:150px}
+.aside p{color:var(--on-dark-2);font-size:12px;line-height:1.55;margin:0}
+
+/* mascot */
+.mascot{overflow:visible}
+.mascot .bodyg{animation:bob 2.8s ease-in-out infinite;transform-origin:50% 90%;transform-box:view-box}
+@keyframes bob{50%{transform:translateY(-3px) scaleY(1.012)}}
+.mascot .shadow{animation:shad 2.8s ease-in-out infinite;transform-origin:50% 93%;transform-box:view-box}
+@keyframes shad{50%{transform:scaleX(.88);opacity:.7}}
+.mascot .eyes{animation:blink 4.2s infinite;transform-origin:50% 62%;transform-box:view-box}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}96.5%{transform:scaleY(.1)}}
+.mascot .smoke circle{animation:smoke 2.6s infinite ease-out}
+.mascot .smoke circle:nth-child(2){animation-delay:1.3s}
+@keyframes smoke{0%{transform:translateY(6px);opacity:0}30%{opacity:.7}100%{transform:translateY(-12px);opacity:0}}
+.mascot .spark{animation:spark 1.6s ease-in-out infinite;transform-origin:50px 5px;transform-box:view-box}
+@keyframes spark{50%{transform:scale(1.3) rotate(20deg)}}
+.mascot .happy{display:none}
+.mascot.is-happy .happy{display:inline}.mascot.is-happy .open{display:none}
+.mascot.talk .mouth{animation:talk .22s infinite alternate}
+@keyframes talk{to{transform:scaleY(2.2)}}
+.mascot .mouth{transform-origin:50px 74px;transform-box:view-box}
+.mascot.think .pupils{transform:translate(2px,-2.5px)!important}
+
+.floater{position:fixed;right:max(18px,env(safe-area-inset-right,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:15;display:flex;align-items:center;gap:6px}
+.floater .say{background:var(--nav);color:#fff;font-weight:700;font-size:12px;padding:10px 16px;border-radius:19px;box-shadow:var(--float);opacity:0;transform:translateX(12px) scale(.9);transition:opacity .3s,transform .35s cubic-bezier(.3,1.5,.5,1);pointer-events:none;white-space:nowrap}
+.floater.show .say{opacity:1;transform:none}
+.floater .mascot{width:84px;height:84px;cursor:pointer;transition:transform .2s}
+.floater .mascot:hover{transform:scale(1.08)}
+
+/* palette, toast, login */
+.overlay{position:fixed;inset:0;z-index:50;background:rgba(10,15,31,.45);backdrop-filter:blur(3px);display:flex;justify-content:center;align-items:flex-start;padding:90px 16px 16px;animation:fade .2s both}
+@keyframes fade{from{opacity:0}}
+.pal{width:640px;max-width:100%;padding:16px;display:flex;flex-direction:column;gap:8px;animation:enter .28s both}
+.pal .list{max-height:380px;overflow:auto;display:flex;flex-direction:column;gap:2px}
+.pal .grp{font-size:11px;font-weight:800;color:var(--text-3);letter-spacing:.1em;margin:8px 12px 2px}
+.pal .it{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;text-align:left;font-weight:600}
+.pal .it.on,.pal .it:hover{background:var(--accent-soft)}
+.pal .it span{flex:1}.pal .it small{color:var(--text-2);font-weight:600}
+.toasts{position:fixed;top:calc(80px + env(safe-area-inset-top,0px));right:max(24px,env(safe-area-inset-right,0px));z-index:60;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.toast{display:flex;align-items:center;gap:10px;background:#17233F;color:#fff;border-radius:18px;padding:10px 16px 10px 10px;font-weight:600;font-size:13px;box-shadow:var(--float);animation:tin .4s cubic-bezier(.3,1.4,.5,1) both;max-width:440px}
+.toast.out{animation:tout .3s both}
+@keyframes tin{from{opacity:0;transform:translateX(40px)}}
+@keyframes tout{to{opacity:0;transform:translateX(30px)}}
+.toast i{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--accent);flex:none}
+.toast i.ok{background:var(--pos)}
+.toast i .ic{width:15px;height:15px;stroke:#fff}
+.login{position:fixed;inset:0;z-index:40;display:grid;grid-template-columns:minmax(0,620px) minmax(0,1fr);background:var(--bg);animation:fade .3s both}
+.login.leaving{animation:lout .5s cubic-bezier(.6,0,.4,1) forwards}
+@keyframes lout{to{opacity:0;transform:scale(1.04)}}
+.lart{background:linear-gradient(160deg,#22305A,#0F1730);color:#fff;padding:56px 64px;display:flex;flex-direction:column;gap:16px;position:relative;overflow:hidden}
+.lart::before{content:"";position:absolute;right:-120px;top:-120px;width:360px;height:360px;border-radius:50%;background:rgba(242,138,60,.16)}
+.lart::after{content:"";position:absolute;left:-80px;bottom:-110px;width:260px;height:260px;border-radius:50%;background:rgba(185,243,107,.08)}
+.lart .mascot{width:200px;height:200px;margin-top:auto}
+.lart h2{font-size:40px;line-height:1.2;color:#fff;letter-spacing:-.5px}
+.feat{display:flex;align-items:center;gap:12px;color:#C9D2E6}
+.feat .bubble{width:34px;height:34px;border-radius:11px;background:#2B3A6B;color:#FFB37A}
+.feat .bubble .ic{width:17px;height:17px}
+.lform{display:grid;place-items:center;padding:24px max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px))}
+.lform form{width:440px;max-width:100%;display:flex;flex-direction:column;gap:10px}
+.lform h1{font-size:34px}
+.lform label{font-size:12px;font-weight:700;color:var(--text-2);margin-top:8px}
+.lform input{height:52px;border-radius:16px;border:1.5px solid var(--border);background:var(--surface);padding:0 18px;font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s}
+.lform input:focus{border-color:var(--accent);box-shadow:0 6px 18px rgba(242,138,60,.25)}
+.lform .err{color:var(--danger);font-size:12px;font-weight:600;min-height:18px}
+.lform .btn{justify-content:center;margin-top:6px}
+.shake{animation:shake .4s}
+@keyframes shake{20%{transform:translateX(12px)}40%{transform:translateX(-10px)}60%{transform:translateX(7px)}80%{transform:translateX(-4px)}}
+.empty{padding:40px 30px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.empty .mascot{width:130px;height:130px}
+.empty p{color:var(--text-2);margin:0}
+.demo-flag{font-size:11px;color:var(--text-3);text-align:center;margin-top:-6px}
+
+/* responsive */
+@media (max-width:1180px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.cols,.comfort-lay,.chat-lay,.maplay{grid-template-columns:minmax(0,1fr)}.live{position:static}.chat-lay{height:auto}.chat{height:70vh}.aside{display:none}}
+@media (max-width:860px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:fixed;left:0;right:0;bottom:0;z-index:30;flex-direction:row;padding:8px max(8px,env(safe-area-inset-left,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-right,0px));gap:2px;overflow-x:auto}
+  .side::after,.brand,.sec-label,.promo,.side-note,.nav[data-r=reviews],.nav[data-r=admin]{display:none}
+  .nav{flex-direction:column;height:54px;gap:2px;font-size:10px;padding:6px 8px;min-width:64px;justify-content:center;flex:1}
+  .nav .label-long{display:none}
+  .nav .cnt{position:absolute;top:2px;right:6px;margin:0;font-size:9px;padding:0 5px;min-width:16px}
+  .top{padding:0 max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px))}
+  .user div,.seg.lang{display:none}
+  .view{padding:20px max(16px,env(safe-area-inset-right,0px)) 120px max(16px,env(safe-area-inset-left,0px))}
+  .hero{flex-direction:column-reverse;align-items:flex-start;padding:24px}.hero .mascot{width:120px;height:120px}
+  .hero h1{font-size:26px}
+  .stats{grid-template-columns:minmax(0,1fr)}
+  .crit{grid-template-columns:minmax(0,1fr)}
+  .facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .login{grid-template-columns:minmax(0,1fr)}.lart{display:none}
+  .tray{left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px))}
+  .tray b{min-width:0}
+  .floater{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+  .floater .say{display:none}
+  .meter{grid-template-columns:22px 90px minmax(0,1fr) 30px}
+  .dcover h1{font-size:28px}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+
+<div class="app" id="app">
+  <aside class="side" id="side"></aside>
+  <div class="main">
+    <header class="top" id="top"></header>
+    <main class="view" id="view"></main>
+  </div>
+</div>
+<div class="tray" id="tray"></div>
+<div class="floater" id="floater"></div>
+<div class="toasts" id="toasts"></div>
+
+<script>
+const DATA = {"d":[["Capital Park","Есильский","пр. Мангилик Ел, 19","Бизнес",2019,18,640,"56 млн","420 000",85,[90,75,89,81,89],["удобный транспорт","уютный двор","хорошая управляющая"],[],"Преимущественно положительный фон",9,4.4,51.1236,71.4321],["BI City Seoul","Есильский","ул. Сыганак, 32","Комфорт+",2022,16,980,"38.5 млн","300 000",82,[89,66,90,82,85],["уютный двор","удобный транспорт","хорошая управляющая"],["шум"],"Преимущественно положительный фон",7,4.4,51.0986,71.4182],["Promenade Expo","Есильский","ул. Е-10, 17","Комфорт+",2021,15,560,"43 млн","330 000",81,[80,81,84,86,76],["охрана и камеры","уютный двор","тихо и спокойно"],[],"Преимущественно положительный фон",10,4.2,51.0842,71.4254],["Grand Opera","Есильский","ул. Кунаева, 14","Премиум",2018,22,410,"82 млн","550 000",80,[73,56,92,89,88],["уютный двор","охрана и камеры","хорошая управляющая"],["шум"],"Преимущественно положительный фон",7,4.1,51.1362,71.4143],["Shanyrak Park","Нура","ул. Кайым Мухамедханова, 40","Комфорт",2024,12,820,"23.5 млн","200 000",80,[78,80,89,81,70],["уютный двор","охрана и камеры","тихо и спокойно"],["работа УК"],"Преимущественно положительный фон",8,4.1,51.0702,71.4486],["Riviera Esil","Байконурский","наб. Есиля, 12","Бизнес",2023,17,450,"49 млн","370 000",79,[67,79,92,95,64],["охрана и камеры","уютный двор","тихо и спокойно"],["работа УК","пробки и дорога"],"Преимущественно положительный фон",11,4.3,51.163,71.4352],["Highvill Astana","Есильский","ул. Ахмета Байтурсынова, 1","Премиум",2019,24,1200,"69 млн","480 000",78,[83,75,84,78,72],["уютный двор","удобный транспорт","охрана и камеры"],[],"Преимущественно положительный фон",9,4.2,51.1214,71.4182],["Arman Qala","Алматинский","ул. Жиенкулова, 3","Комфорт",2022,10,900,"24 млн","210 000",74,[72,72,79,69,77],["уютный двор","хорошая управляющая","удобный транспорт"],["безопасность подъезда"],"Смешанные впечатления",7,3.9,51.1553,71.4706],["Expo Boulevard","Есильский","пр. Туран, 55","Бизнес",2020,20,720,"51 млн","390 000",74,[88,63,70,77,72],["удобный транспорт","охрана и камеры","хорошая управляющая"],["шум","тесный двор/парковка"],"Смешанные впечатления",7,3.9,51.0893,71.4141],["BI City","Есильский","пр. Кабанбай батыра, 58","Комфорт",2021,12,1450,"32 млн","260 000",70,[78,66,71,82,52],["охрана и камеры","удобный транспорт","уютный двор"],["работа УК","шум","тесный двор/парковка"],"Смешанные впечатления",10,3.7,51.1052,71.4056],["Al-Farabi","Есильский","пр. Аль-Фараби, 21","Бизнес",2017,16,380,"47 млн","360 000",69,[68,76,68,71,60],["тихо и спокойно","охрана и камеры"],["работа УК","тесный двор/парковка","пробки и дорога"],"Смешанные впечатления",11,3.6,51.1302,71.3984],["BI City Tokyo","Есильский","ул. Хусейн бен Талал, 25","Комфорт",2023,14,870,"35 млн","280 000",66,[71,73,82,54,48],["уютный двор","тихо и спокойно","удобный транспорт"],["работа УК","безопасность подъезда","пробки и дорога"],"Смешанные впечатления",11,3.7,51.1021,71.3962],["Green Quarter","Алматинский","ул. Тлендиева, 8","Комфорт",2020,12,1100,"27.5 млн","230 000",65,[58,69,79,62,55],["уютный двор"],["работа УК","пробки и дорога","безопасность подъезда"],"Смешанные впечатления",10,3.6,51.1468,71.4688],["Nova City","Сарыаркинский","пр. Богенбай батыра, 62","Эконом",2016,9,1300,"19.5 млн","180 000",53,[58,41,60,58,48],[],["шум","работа УК","безопасность подъезда"],"Есть повторяющиеся проблемы",10,2.9,51.1782,71.4053]],"r":[["Жанар О.","2026-10-28",3,"Закрытый двор без машин, детская площадка большая и современная. Утром пробки на выезде, до центра далеко без машины.","Al-Farabi"],["Камила Ш.","2026-10-28",3,"Парковки не хватает, во дворе машин много и тесно. Спокойный район, соседи адекватные, тишина в подъезде.","BI City"],["Мадина Т.","2026-10-26",5,"Много озеленения, летом во дворе как в парке. Парковка подземная. Безопасно: домофон с камерой, по двору работает охрана круглосуточно.","Riviera Esil"],["Ильяс М.","2026-10-26",2,"Слышно шум дороги и стройку по соседству, летом окна не откроешь. Охрана на въезде, консьерж и камеры — за ребёнка спокойно.","Nova City"],["Сергей В.","2026-10-26",4,"Удобный выезд на проспект, до работы добираюсь быстро даже в часы пик. Спокойный район, соседи адекватные, тишина в подъезде.","Al-Farabi"],["Ильяс М.","2026-10-24",5,"Много озеленения, летом во дворе как в парке. Парковка подземная. До остановки две минуты, автобусы ходят часто — до центра доезжаю за 15 минут.","BI City Tokyo"],["Гульнара А.","2026-10-22",4,"Безопасно: домофон с камерой, по двору работает охрана круглосуточно. Удобный выезд на проспект, до работы добираюсь быстро даже в часы пик.","Arman Qala"],["Руслан И.","2026-10-17",4,"Много озеленения, летом во дворе как в парке. Парковка подземная. Хорошая шумоизоляция, тихо даже рядом с проспектом. Охраны фактически нет, в подъезд заходят посторонние.","BI City Tokyo"],["Асель М.","2026-10-16",5,"Хорошая шумоизоляция, тихо даже рядом с проспектом. Двор ухоженный, есть площадки для детей и воркаут. Уборка каждый день, сервис на уровне, приложение для заявок удобное.","Al-Farabi"],["Сергей В.","2026-10-09",5,"Очень тихо по ночам, шум дороги не слышно — окна во двор. До остановки две минуты, автобусы ходят часто — до центра доезжаю за 15 минут.","BI City Tokyo"],["Арман К.","2026-10-06",3,"Охраны фактически нет, в подъезд заходят посторонние. Хорошая шумоизоляция, тихо даже рядом с проспектом.","Arman Qala"],["Гульнара А.","2026-10-06",4,"Много озеленения, летом во дворе как в парке. Парковка подземная. Безопасно: домофон с камерой, по двору работает охрана круглосуточно. Громкие соседи сверху, шумоизоляция слабая.","Grand Opera"],["Сабина Р.","2026-09-27",4,"Очень тихо по ночам, шум дороги не слышно — окна во двор. Закрытый двор без машин, детская площадка большая и современная.","Arman Qala"],["Данияр Б.","2026-09-25",2,"После дождя течет в паркинге, ремонт делают медленно. Удобный выезд на проспект, до работы добираюсь быстро даже в часы пик.","Nova City"],["Сабина Р.","2026-09-24",5,"До остановки две минуты, автобусы ходят часто — до центра доезжаю за 15 минут. Очень тихо по ночам, шум дороги не слышно — окна во двор. Чужие во двор не заходят, охрана быстро реагирует.","Capital Park"],["Гульнара А.","2026-09-21",3,"Рядом транспорт и LRT, ребёнок сам ездит в школу. Уборка каждый день, сервис на уровне, приложение для заявок удобное.","Nova City"],["Сергей В.","2026-09-20",3,"До остановки две минуты, автобусы ходят часто — до центра доезжаю за 15 минут. После дождя течет в паркинге, ремонт делают медленно. Хорошая шумоизоляция, тихо даже рядом с проспектом.","Nova City"],["Дана Е.","2026-09-17",4,"Управляющая компания быстро решает заявки, в подъезде чисто. Безопасно: домофон с камерой, по двору работает охрана круглосуточно.","Green Quarter"],["Ильяс М.","2026-09-15",5,"Рядом транспорт и LRT, ребёнок сам ездит в школу. Управляющая компания быстро решает заявки, в подъезде чисто. Чужие во двор не заходят, охрана быстро реагирует.","Grand Opera"],["Ольга П.","2026-09-13",4,"Хорошая шумоизоляция, тихо даже рядом с проспектом. КСК работает хорошо: зимой снег убирают быстро, всё чисто. Безопасно: домофон с камерой, по двору работает охрана круглосуточно.","Arman Qala"],["Камила Ш.","2026-09-12",5,"Спокойный район, соседи адекватные, тишина в подъезде. До остановки две минуты, автобусы ходят часто — до центра доезжаю за 15 минут.","Highvill Astana"],["Данияр Б.","2026-09-10",5,"Двор ухоженный, есть площадки для детей и воркаут. Очень тихо по ночам, шум дороги не слышно — окна во двор. До остановки две минуты, автобусы ходят часто — до центра доезжаю за 15 минут.","Green Quarter"],["Ерлан С.","2026-09-05",5,"Безопасно: домофон с камерой, по двору работает охрана круглосуточно. Двор ухоженный, есть площадки для детей и воркаут.","Riviera Esil"],["Камила Ш.","2026-09-01",4,"Чужие во двор не заходят, охрана быстро реагирует. Рядом транспорт и LRT, ребёнок сам ездит в школу. Громкие соседи сверху, шумоизоляция слабая.","BI City"],["Арман К.","2026-08-28",3,"Рядом транспорт и LRT, ребёнок сам ездит в школу. Подъезд вечером тёмный, лифт не работает по выходным.","Nova City"],["Ольга П.","2026-08-26",5,"Очень тихо по ночам, шум дороги не слышно — окна во двор. Двор ухоженный, есть площадки для детей и воркаут.","BI City Tokyo"],["Жанар О.","2026-08-24",5,"Очень тихо по ночам, шум дороги не слышно — окна во двор. Охрана на въезде, консьерж и камеры — за ребёнка спокойно. Двор ухоженный, есть площадки для детей и воркаут.","Grand Opera"],["Алексей Н.","2026-08-22",5,"Уборка каждый день, сервис на уровне, приложение для заявок удобное. Безопасно: домофон с камерой, по двору работает охрана круглосуточно. Остановка далеко, трудно добираться общественным транспортом.","BI City Seoul"],["Асель М.","2026-08-18",3,"Рядом транспорт и LRT, ребёнок сам ездит в школу. Слышно шум дороги и стройку по соседству, летом окна не откроешь. Безопасно: домофон с камерой, по двору работает охрана круглосуточно.","Arman Qala"],["Томирис Б.","2026-08-15",3,"После дождя течет в паркинге, ремонт делают медленно. Хорошая шумоизоляция, тихо даже рядом с проспектом.","Shanyrak Park"],["Руслан И.","2026-08-15",3,"Много озеленения, летом во дворе как в парке. Парковка подземная. После дождя течет в паркинге, ремонт делают медленно.","Green Quarter"],["Ержан Т.","2026-08-07",5,"Закрытый двор без машин, детская площадка большая и современная. До остановки две минуты, автобусы ходят часто — до центра доезжаю за 15 минут. Уборка каждый день, сервис на уровне, приложение для заявок удобное.","BI City Seoul"],["Данияр Б.","2026-08-04",4,"До остановки две минуты, автобусы ходят часто — до центра доезжаю за 15 минут. Охраны фактически нет, в подъезд заходят посторонние.","Capital Park"],["Ерлан С.","2026-08-01",4,"Двор ухоженный, есть площадки для детей и воркаут. Безопасно: домофон с камерой, по двору работает охрана круглосуточно.","Nova City"],["Мадина Т.","2026-07-28",4,"После дождя течет в паркинге, ремонт делают медленно. До остановки две минуты, автобусы ходят часто — до центра доезжаю за 15 минут.","Highvill Astana"],["Асель М.","2026-07-27",5,"Много озеленения, летом во дворе как в парке. Парковка подземная. Хорошая шумоизоляция, тихо даже рядом с проспектом.","Capital Park"],["Гульнара А.","2026-07-24",4,"Уборка каждый день, сервис на уровне, приложение для заявок удобное. Безопасно: домофон с камерой, по двору работает охрана круглосуточно.","Riviera Esil"],["Сабина Р.","2026-07-23",4,"Охрана на въезде, консьерж и камеры — за ребёнка спокойно. Рядом транспорт и LRT, ребёнок сам ездит в школу.","Al-Farabi"],["Нурлан А.","2026-07-21",5,"Хорошая шумоизоляция, тихо даже рядом с проспектом. Много озеленения, летом во дворе как в парке. Парковка подземная.","Highvill Astana"],["Бауыржан Д.","2026-07-18",5,"Чужие во двор не заходят, охрана быстро реагирует. Очень тихо по ночам, шум дороги не слышно — окна во двор. Управляющая плохая: заявки висят неделями, не убирают подъезд.","Riviera Esil"],["Айгерим С.","2026-07-18",1,"Остановка далеко, трудно добираться общественным транспортом. Громкие соседи сверху, шумоизоляция слабая. Управляющая плохая: заявки висят неделями, не убирают подъезд.","Green Quarter"],["Асель М.","2026-07-15",3,"Закрытый двор без машин, детская площадка большая и современная. Охраны фактически нет, в подъезд заходят посторонние.","BI City Tokyo"],["Данияр Б.","2026-07-12",3,"Управляющая компания быстро решает заявки, в подъезде чисто. Двор маленький, площадка тесная, зелени почти нет.","Expo Boulevard"],["Жанар О.","2026-07-08",5,"Управляющая компания быстро решает заявки, в подъезде чисто. Чужие во двор не заходят, охрана быстро реагирует. Удобный выезд на проспект, до работы добираюсь быстро даже в часы пик.","Promenade Expo"],["Гульнара А.","2026-07-07",4,"После дождя течет в паркинге, ремонт делают медленно. До остановки две минуты, автобусы ходят часто — до центра доезжаю за 15 минут.","BI City"],["Данияр Б.","2026-07-05",5,"Спокойный район, соседи адекватные, тишина в подъезде. КСК работает хорошо: зимой снег убирают быстро, всё чисто.","Green Quarter"],["Асель М.","2026-07-05",4,"КСК работает хорошо: зимой снег убирают быстро, всё чисто. Охрана на въезде, консьерж и камеры — за ребёнка спокойно.","Expo Boulevard"],["Сабина Р.","2026-07-03",3,"После дождя течет в паркинге, ремонт делают медленно. Двор ухоженный, есть площадки для детей и воркаут.","Al-Farabi"],["Руслан И.","2026-07-02",5,"Двор ухоженный, есть площадки для детей и воркаут. Спокойный район, соседи адекватные, тишина в подъезде.","Highvill Astana"],["Алексей Н.","2026-06-26",5,"Очень тихо по ночам, шум дороги не слышно — окна во двор. Охрана на въезде, консьерж и камеры — за ребёнка спокойно. Удобный выезд на проспект, до работы добираюсь быстро даже в часы пик.","Riviera Esil"],["Алексей Н.","2026-06-25",2,"Слышно шум дороги и стройку по соседству, летом окна не откроешь. Управляющая плохая: заявки висят неделями, не убирают подъезд.","Riviera Esil"],["Алексей Н.","2026-06-25",3,"Уборка каждый день, сервис на уровне, приложение для заявок удобное. Слышно шум дороги и стройку по соседству, летом окна не откроешь.","Highvill Astana"],["Бауыржан Д.","2026-06-25",4,"Парковки не хватает, во дворе машин много и тесно. Чужие во двор не заходят, охрана быстро реагирует. До остановки две минуты, автобусы ходят часто — до центра доезжаю за 15 минут.","Expo Boulevard"],["Арман К.","2026-06-23",5,"Безопасно: домофон с камерой, по двору работает охрана круглосуточно. Хорошая шумоизоляция, тихо даже рядом с проспектом. Много озеленения, летом во дворе как в парке. Парковка подземная.","BI City"],["Данияр Б.","2026-06-21",3,"Утром пробки на выезде, до центра далеко без машины. Управляющая компания быстро решает заявки, в подъезде чисто.","Green Quarter"],["Руслан И.","2026-06-15",3,"Утром пробки на выезде, до центра далеко без машины. Двор ухоженный, есть площадки для детей и воркаут.","Al-Farabi"],["Нурлан А.","2026-06-15",4,"Управляющая плохая: заявки висят неделями, не убирают подъезд. Удобный выезд на проспект, до работы добираюсь быстро даже в часы пик. Очень тихо по ночам, шум дороги не слышно — окна во двор.","Promenade Expo"],["Сабина Р.","2026-06-12",4,"До остановки две минуты, автобусы ходят часто — до центра доезжаю за 15 минут. Чужие во двор не заходят, охрана быстро реагирует.","Highvill Astana"],["Ильяс М.","2026-06-10",5,"Уборка каждый день, сервис на уровне, приложение для заявок удобное. Много озеленения, летом во дворе как в парке. Парковка подземная.","Capital Park"],["Нурлан А.","2026-06-07",5,"Уборка каждый день, сервис на уровне, приложение для заявок удобное. Много озеленения, летом во дворе как в парке. Парковка подземная.","Grand Opera"],["Нурлан А.","2026-06-07",3,"Охраны фактически нет, в подъезд заходят посторонние. КСК работает хорошо: зимой снег убирают быстро, всё чисто.","BI City Tokyo"],["Бауыржан Д.","2026-06-06",4,"Подъезд вечером тёмный, лифт не работает по выходным. Хорошая шумоизоляция, тихо даже рядом с проспектом.","Shanyrak Park"],["Гульнара А.","2026-06-03",4,"Хорошая шумоизоляция, тихо даже рядом с проспектом. Остановка далеко, трудно добираться общественным транспортом.","Highvill Astana"],["Томирис Б.","2026-06-02",5,"Уборка каждый день, сервис на уровне, приложение для заявок удобное. Закрытый двор без машин, детская площадка большая и современная.","Shanyrak Park"],["Ильяс М.","2026-05-28",3,"После дождя течет в паркинге, ремонт делают медленно. Охрана на въезде, консьерж и камеры — за ребёнка спокойно.","Al-Farabi"],["Мадина Т.","2026-05-23",4,"До остановки две минуты, автобусы ходят часто — до центра доезжаю за 15 минут. Уборка каждый день, сервис на уровне, приложение для заявок удобное. Двор маленький, площадка тесная, зелени почти нет.","Al-Farabi"],["Нурлан А.","2026-05-21",3,"Управляющая компания быстро решает заявки, в подъезде чисто. Утром пробки на выезде, до центра далеко без машины.","Riviera Esil"],["Жанар О.","2026-05-21",4,"Удобный выезд на проспект, до работы добираюсь быстро даже в часы пик. Управляющая компания быстро решает заявки, в подъезде чисто. Двор маленький, площадка тесная, зелени почти нет.","Al-Farabi"],["Дана Е.","2026-05-21",4,"Двор ухоженный, есть площадки для детей и воркаут. Управляющая плохая: заявки висят неделями, не убирают подъезд. Удобный выезд на проспект, до работы добираюсь быстро даже в часы пик.","Green Quarter"],["Бауыржан Д.","2026-05-21",4,"Охрана на въезде, консьерж и камеры — за ребёнка спокойно. Парковки не хватает, во дворе машин много и тесно. До остановки две минуты, автобусы ходят часто — до центра доезжаю за 15 минут.","Capital Park"],["Данияр Б.","2026-05-18",4,"Остановка далеко, трудно добираться общественным транспортом. Много озеленения, летом во дворе как в парке. Парковка подземная.","Riviera Esil"],["Тимур Ж.","2026-05-17",3,"Остановка далеко, трудно добираться общественным транспортом. Очень тихо по ночам, шум дороги не слышно — окна во двор.","Promenade Expo"],["Ольга П.","2026-05-15",5,"Рядом транспорт и LRT, ребёнок сам ездит в школу. Безопасно: домофон с камерой, по двору работает охрана круглосуточно.","BI City Seoul"],["Ерлан С.","2026-05-10",3,"Закрытый двор без машин, детская площадка большая и современная. Громкие соседи сверху, шумоизоляция слабая.","Expo Boulevard"],["Асель М.","2026-05-10",3,"Громкие соседи сверху, шумоизоляция слабая. Охраны фактически нет, в подъезд заходят посторонние.","Expo Boulevard"],["Гульнара А.","2026-05-08",5,"Закрытый двор без машин, детская площадка большая и современная. Очень тихо по ночам, шум дороги не слышно — окна во двор.","Arman Qala"],["Мадина Т.","2026-05-06",5,"Чужие во двор не заходят, охрана быстро реагирует. До остановки две минуты, автобусы ходят часто — до центра доезжаю за 15 минут. Уборка каждый день, сервис на уровне, приложение для заявок удобное.","Capital Park"],["Сергей В.","2026-05-05",5,"Рядом транспорт и LRT, ребёнок сам ездит в школу. Безопасно: домофон с камерой, по двору работает охрана круглосуточно.","Expo Boulevard"],["Арман К.","2026-05-03",4,"Спокойный район, соседи адекватные, тишина в подъезде. Охраны фактически нет, в подъезд заходят посторонние.","Green Quarter"],["Ильяс М.","2026-05-03",4,"Спокойный район, соседи адекватные, тишина в подъезде. Управляющая плохая: заявки висят неделями, не убирают подъезд. Охрана на въезде, консьерж и камеры — за ребёнка спокойно.","BI City Seoul"],["Алексей Н.","2026-05-02",5,"Безопасно: домофон с камерой, по двору работает охрана круглосуточно. Очень тихо по ночам, шум дороги не слышно — окна во двор. Удобный выезд на проспект, до работы добираюсь быстро даже в часы пик.","Shanyrak Park"],["Дана Е.","2026-04-22",3,"Удобный выезд на проспект, до работы добираюсь быстро даже в часы пик. Управляющая плохая: заявки висят неделями, не убирают подъезд.","BI City Tokyo"],["Бауыржан Д.","2026-04-18",4,"Двор ухоженный, есть площадки для детей и воркаут. Очень тихо по ночам, шум дороги не слышно — окна во двор.","Promenade Expo"],["Ильяс М.","2026-04-05",4,"Двор ухоженный, есть площадки для детей и воркаут. Охрана на въезде, консьерж и камеры — за ребёнка спокойно.","Arman Qala"],["Ерлан С.","2026-04-01",3,"Много озеленения, летом во дворе как в парке. Парковка подземная. Громкие соседи сверху, шумоизоляция слабая.","Highvill Astana"],["Ильяс М.","2026-03-24",4,"Закрытый двор без машин, детская площадка большая и современная. Рядом транспорт и LRT, ребёнок сам ездит в школу.","Shanyrak Park"],["Данияр Б.","2026-03-21",5,"Удобный выезд на проспект, до работы добираюсь быстро даже в часы пик. Управляющая компания быстро решает заявки, в подъезде чисто. Двор ухоженный, есть площадки для детей и воркаут.","Grand Opera"],["Айгерим С.","2026-03-21",3,"После дождя течет в паркинге, ремонт делают медленно. Очень тихо по ночам, шум дороги не слышно — окна во двор.","BI City"],["Айдана К.","2026-03-20",4,"Уборка каждый день, сервис на уровне, приложение для заявок удобное. До остановки две минуты, автобусы ходят часто — до центра доезжаю за 15 минут. Слышно шум дороги и стройку по соседству, летом окна не откроешь.","BI City"],["Томирис Б.","2026-03-19",5,"Рядом транспорт и LRT, ребёнок сам ездит в школу. КСК работает хорошо: зимой снег убирают быстро, всё чисто.","Highvill Astana"],["Ерлан С.","2026-03-15",5,"Хорошая шумоизоляция, тихо даже рядом с проспектом. Безопасно: домофон с камерой, по двору работает охрана круглосуточно.","Promenade Expo"],["Сабина Р.","2026-03-10",5,"Охрана на въезде, консьерж и камеры — за ребёнка спокойно. Закрытый двор без машин, детская площадка большая и современная. Очень тихо по ночам, шум дороги не слышно — окна во двор.","Riviera Esil"],["Сабина Р.","2026-03-08",5,"КСК работает хорошо: зимой снег убирают быстро, всё чисто. Безопасно: домофон с камерой, по двору работает охрана круглосуточно. Рядом транспорт и LRT, ребёнок сам ездит в школу.","Promenade Expo"],["Алия Н.","2026-03-06",3,"До остановки две минуты, автобусы ходят часто — до центра доезжаю за 15 минут. Охраны фактически нет, в подъезд заходят посторонние.","Green Quarter"],["Ильяс М.","2026-03-05",4,"КСК работает хорошо: зимой снег убирают быстро, всё чисто. Утром пробки на выезде, до центра далеко без машины.","Shanyrak Park"],["Нурлан А.","2026-02-26",3,"После дождя течет в паркинге, ремонт делают медленно. Спокойный район, соседи адекватные, тишина в подъезде.","Shanyrak Park"],["Камила Ш.","2026-02-25",4,"КСК работает хорошо: зимой снег убирают быстро, всё чисто. Чужие во двор не заходят, охрана быстро реагирует.","Nova City"],["Гульнара А.","2026-02-24",3,"До остановки две минуты, автобусы ходят часто — до центра доезжаю за 15 минут. Много озеленения, летом во дворе как в парке. Парковка подземная. Слышно шум дороги и стройку по соседству, летом окна не откроешь.","Nova City"],["Алексей Н.","2026-02-18",2,"Двор маленький, площадка тесная, зелени почти нет. До остановки две минуты, автобусы ходят часто — до центра доезжаю за 15 минут.","Nova City"],["Руслан И.","2026-02-16",5,"Хорошая шумоизоляция, тихо даже рядом с проспектом. Чужие во двор не заходят, охрана быстро реагирует.","Promenade Expo"],["Арман К.","2026-02-15",5,"Много озеленения, летом во дворе как в парке. Парковка подземная. КСК работает хорошо: зимой снег убирают быстро, всё чисто.","BI City Seoul"],["Алексей Н.","2026-02-14",3,"Хорошая шумоизоляция, тихо даже рядом с проспектом. После дождя течет в паркинге, ремонт делают медленно.","BI City Tokyo"],["Асель М.","2026-02-12",3,"Очень тихо по ночам, шум дороги не слышно — окна во двор. Управляющая плохая: заявки висят неделями, не убирают подъезд.","Al-Farabi"],["Данияр Б.","2026-02-12",3,"После дождя течет в паркинге, ремонт делают медленно. Удобный выезд на проспект, до работы добираюсь быстро даже в часы пик.","Promenade Expo"],["Сабина Р.","2026-02-07",3,"Двор ухоженный, есть площадки для детей и воркаут. Удобный выезд на проспект, до работы добираюсь быстро даже в часы пик.","Nova City"],["Ержан Т.","2026-02-06",3,"Управляющая плохая: заявки висят неделями, не убирают подъезд. Двор ухоженный, есть площадки для детей и воркаут.","BI City"],["Томирис Б.","2026-02-01",5,"До остановки две минуты, автобусы ходят часто — до центра доезжаю за 15 минут. КСК работает хорошо: зимой снег убирают быстро, всё чисто. Двор ухоженный, есть площадки для детей и воркаут.","BI City"],["Сергей В.","2026-01-28",4,"Уборка каждый день, сервис на уровне, приложение для заявок удобное. Охраны фактически нет, в подъезд заходят посторонние.","BI City Seoul"],["Сергей В.","2026-01-27",2,"Громкие соседи сверху, шумоизоляция слабая. Утром пробки на выезде, до центра далеко без машины.","Grand Opera"],["Бауыржан Д.","2026-01-26",4,"Много озеленения, летом во дворе как в парке. Парковка подземная. Хорошая шумоизоляция, тихо даже рядом с проспектом. Рядом транспорт и LRT, ребёнок сам ездит в школу.","Al-Farabi"],["Дана Е.","2026-01-24",5,"До остановки две минуты, автобусы ходят часто — до центра доезжаю за 15 минут. Безопасно: домофон с камерой, по двору работает охрана круглосуточно. КСК работает хорошо: зимой снег убирают быстро, всё чисто.","Promenade Expo"],["Дана Е.","2026-01-22",3,"КСК работает хорошо: зимой снег убирают быстро, всё чисто. Громкие соседи сверху, шумоизоляция слабая.","Grand Opera"],["Ерлан С.","2026-01-18",3,"Рядом транспорт и LRT, ребёнок сам ездит в школу. Управляющая плохая: заявки висят неделями, не убирают подъезд.","BI City"],["Ильяс М.","2026-01-16",5,"КСК работает хорошо: зимой снег убирают быстро, всё чисто. Охрана на въезде, консьерж и камеры — за ребёнка спокойно.","Shanyrak Park"],["Алия Н.","2026-01-09",4,"КСК работает хорошо: зимой снег убирают быстро, всё чисто. Хорошая шумоизоляция, тихо даже рядом с проспектом.","Riviera Esil"],["Алия Н.","2026-01-08",3,"Закрытый двор без машин, детская площадка большая и современная. Слышно шум дороги и стройку по соседству, летом окна не откроешь.","BI City Tokyo"],["Айдана К.","2026-01-03",5,"Много озеленения, летом во дворе как в парке. Парковка подземная. Безопасно: домофон с камерой, по двору работает охрана круглосуточно.","Riviera Esil"],["Алексей Н.","2025-11-26",3,"Громкие соседи сверху, шумоизоляция слабая. КСК работает хорошо: зимой снег убирают быстро, всё чисто.","Capital Park"],["Алексей Н.","2025-11-14",3,"Подъезд вечером тёмный, лифт не работает по выходным. Очень тихо по ночам, шум дороги не слышно — окна во двор.","Promenade Expo"],["Камила Ш.","2025-11-14",5,"Закрытый двор без машин, детская площадка большая и современная. Рядом транспорт и LRT, ребёнок сам ездит в школу. Охрана на въезде, консьерж и камеры — за ребёнка спокойно.","Expo Boulevard"],["Максим Л.","2025-11-14",3,"Закрытый двор без машин, детская площадка большая и современная. Громкие соседи сверху, шумоизоляция слабая.","BI City Seoul"],["Асель М.","2025-11-13",3,"До остановки две минуты, автобусы ходят часто — до центра доезжаю за 15 минут. Управляющая плохая: заявки висят неделями, не убирают подъезд. Очень тихо по ночам, шум дороги не слышно — окна во двор.","BI City"],["Гульнара А.","2025-11-11",4,"Остановка далеко, трудно добираться общественным транспортом. Спокойный район, соседи адекватные, тишина в подъезде. Безопасно: домофон с камерой, по двору работает охрана круглосуточно.","BI City Tokyo"],["Ольга П.","2025-11-10",4,"Остановка далеко, трудно добираться общественным транспортом. Много озеленения, летом во дворе как в парке. Парковка подземная. Безопасно: домофон с камерой, по двору работает охрана круглосуточно.","Green Quarter"],["Сергей В.","2025-11-04",5,"Удобный выезд на проспект, до работы добираюсь быстро даже в часы пик. Много озеленения, летом во дворе как в парке. Парковка подземная. Управляющая компания быстро решает заявки, в подъезде чисто.","Capital Park"],["Айгерим С.","2025-11-03",4,"До остановки две минуты, автобусы ходят часто — до центра доезжаю за 15 минут. Охрана на въезде, консьерж и камеры — за ребёнка спокойно. Громкие соседи сверху, шумоизоляция слабая.","Capital Park"],["Ерлан С.","2025-11-01",3,"Утром пробки на выезде, до центра далеко без машины. Охрана на въезде, консьерж и камеры — за ребёнка спокойно.","BI City Tokyo"]],"t":127};
+/* ---------- data ---------- */
+const CATS=["Транспорт","Тишина","Двор","Безопасность","Сервис"];
+const CAT_ICON={"Транспорт":"bus","Тишина":"volume","Двор":"tree","Безопасность":"shield","Сервис":"wrench"};
+const DEVS=DATA.d.map((r,i)=>({id:i,name:r[0],district:r[1],address:r[2],klass:r[3],year:r[4],floors:r[5],units:r[6],buy:r[7],rent:r[8],score:r[9],cats:Object.fromEntries(CATS.map((c,j)=>[c,r[10][j]])),pros:r[11],cons:r[12],mood:r[13],reviews:r[14],rating:r[15],lat:r[16],lng:r[17],buyM:parseFloat(r[7])}));
+const REVS=DATA.r.map(r=>({author:r[0],date:r[1],rating:r[2],text:r[3],dev:r[4]}));
+const byName=n=>DEVS.find(d=>d.name===n);
+const CRITERIA=[["Тишина","volume","Тишина"],["Транспорт","bus","Транспорт"],["Зелень и воздух","tree","Двор"],["Безопасность","shield","Безопасность"],["Парковка","layers","Двор"],["Двор и условия для детей","home","Двор"],["Школы и детские сады","building","Двор"],["Магазины","wallet","Транспорт"],["Дом и инженерные коммуникации","wrench","Сервис"],["Управление домом","settings","Сервис"],["Доступная среда","users","Двор"],["Интернет и связь","globe","Сервис"]];
+const PRESETS=[["Семья с детьми","users",{"Тишина":4,"Школы и детские сады":5,"Безопасность":5,"Двор и условия для детей":5,"Парковка":3}],["Удалённая работа","monitor",{"Тишина":5,"Интернет и связь":5,"Зелень и воздух":3,"Транспорт":2}],["Студент","bus",{"Транспорт":5,"Магазины":4,"Интернет и связь":4}],["Спокойная жизнь","tree",{"Тишина":5,"Зелень и воздух":5,"Управление домом":4,"Доступная среда":4}],["Базовый","sliders",{}]];
+
+/* ---------- state ---------- */
+const store={get(k,d){try{const v=localStorage.getItem("hc_"+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem("hc_"+k,JSON.stringify(v))}catch(e){}}};
+const S={fav:new Set(store.get("fav",[1,3,5])),cmp:new Set(store.get("cmp",[0,1])),prefs:store.get("prefs",{"Тишина":4,"Безопасность":5,"Школы и детские сады":4,"Двор и условия для детей":4}),
+  notes:store.get("notes",{}),q:"",mode:0,sort:0,district:"",klass:"",lang:store.get("lang","ru"),chat:[],busy:false,mapSel:null,revQ:"",revR:0,loggedIn:false};
+const save=()=>{store.set("fav",[...S.fav]);store.set("cmp",[...S.cmp]);store.set("prefs",S.prefs);store.set("notes",S.notes)};
+function personal(d,prefs=S.prefs){const w={};CATS.forEach(c=>w[c]=0);for(const [c,ic,cat] of CRITERIA){if(prefs[c])w[cat]+=prefs[c]}const t=Object.values(w).reduce((a,b)=>a+b,0);if(!t)return d.score;return Math.round(CATS.reduce((s,c)=>s+d.cats[c]*w[c],0)/t)}
+const scoreColor=v=>v>=80?"var(--pos)":v>=65?"var(--accent)":v>=50?"var(--warn)":"var(--danger)";
+
+/* ---------- i18n (navigation & titles) ---------- */
+const L={
+ ru:{home:"Главная",catalog:"Жилые комплексы",map:"Карта районов",favorites:"Избранное",compare:"Сравнение",comfort:"Мой комфорт",assistant:"ИИ-помощник",reviews:"Отзывы",admin:"Администрирование",work:"РАБОЧАЯ ОБЛАСТЬ",data:"ДАННЫЕ",search:"Поиск ЖК, района, улицы…",promoT:"Не знаете, с чего начать?",promoS:"Доми подберёт ЖК за минуту",ask:"Спросите меня что угодно!"},
+ kk:{home:"Басты бет",catalog:"Тұрғын үй кешендері",map:"Аудандар картасы",favorites:"Таңдаулылар",compare:"Салыстыру",comfort:"Менің жайлылығым",assistant:"AI-көмекші",reviews:"Пікірлер",admin:"Әкімшілік",work:"ЖҰМЫС АЙМАҒЫ",data:"ДЕРЕКТЕР",search:"ТҮК, аудан, көше іздеу…",promoT:"Неден бастарыңызды білмейсіз бе?",promoS:"Доми бір минутта ТҮК таңдайды",ask:"Маған кез келген сұрақ қойыңыз!"},
+ en:{home:"Home",catalog:"Complexes",map:"District map",favorites:"Favorites",compare:"Compare",comfort:"My comfort",assistant:"AI assistant",reviews:"Reviews",admin:"Administration",work:"WORKSPACE",data:"DATA",search:"Search complexes, districts, streets…",promoT:"Not sure where to start?",promoS:"Domi will match you in a minute",ask:"Ask me anything!"}};
+const t=k=>(L[S.lang]||L.ru)[k]||L.ru[k]||k;
+
+/* ---------- icons ---------- */
+const P={home:'<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/>',grid:'<rect x="3" y="3" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="2"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2"/>',map:'<path d="M9 4 3 6.5v13.5l6-2.5 6 2.5 6-2.5V4l-6 2.5z"/><path d="M9 4v13.5M15 6.5V20"/>',heart:'<path d="M12 20.5s-7.5-4.6-9.2-9.4C1.6 7.6 3.9 4 7.4 4c2 0 3.5 1.1 4.6 2.7C13.1 5.1 14.6 4 16.6 4c3.5 0 5.8 3.6 4.6 7.1-1.7 4.8-9.2 9.4-9.2 9.4z"/>',compare:'<rect x="3" y="4" width="7" height="16" rx="2"/><rect x="14" y="4" width="7" height="16" rx="2"/>',sliders:'<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>',sparkle:'<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/>',chat:'<path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9l-5 4V6a1 1 0 0 1 1-1z"/>',star:'<path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8L3.5 9.7l5.9-.9z"/>',settings:'<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>',search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',plus:'<path d="M12 5v14M5 12h14"/>',upload:'<path d="M12 15V4M7 8.5 12 4l5 4.5"/><path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/>',logout:'<path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4"/><path d="M10 16l-4-4 4-4M6 12h10"/>',sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',moon:'<path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/>',monitor:'<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',back:'<path d="M15 5l-7 7 7 7"/>',next:'<path d="M9 5l7 7-7 7"/>',pin:'<path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',refresh:'<path d="M20 11a8 8 0 0 0-14.5-4.5L4 8M4 4v4h4"/><path d="M4 13a8 8 0 0 0 14.5 4.5L20 16M20 20v-4h-4"/>',external:'<path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',send:'<path d="M21 3 10 14M21 3l-7 18-4-7-7-4z"/>',copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',check:'<path d="M5 12.5l4.5 4.5L19 7"/>',close:'<path d="M6 6l12 12M18 6 6 18"/>',users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.5-3.5 3.2-5.5 6.5-5.5s6 2 6.5 5.5"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14.5c2.6.2 4.5 2 5 5"/>',shield:'<path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5L15.5 10"/>',bus:'<rect x="4" y="3" width="16" height="15" rx="3"/><path d="M4 11h16M8 21v-3M16 21v-3"/>',tree:'<path d="M12 21v-5"/><path d="M12 3c-3 0-5 2.4-5 5 0 .4 0 .7.1 1A4 4 0 0 0 8 16.5h8A4 4 0 0 0 16.9 9c.1-.3.1-.6.1-1 0-2.6-2-5-5-5z"/>',volume:'<path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M17 9a4 4 0 0 1 0 6"/>',wrench:'<path d="M14.5 6.5a4 4 0 0 0 5 5L21 13l-8 8-3-3 8-8z"/><path d="M3 21l7-7"/>',wallet:'<rect x="3" y="6" width="18" height="14" rx="3"/><path d="M3 10h18M16 15h2"/>',building:'<rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M9 7h1M14 7h1M9 11h1M14 11h1M9 15h1M14 15h1M10 21v-3h4v3"/>',calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',layers:'<path d="M12 3 2 8l10 5 10-5z"/><path d="M2 13l10 5 10-5"/>',trophy:'<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M9 17h6v4H9z"/>',globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 3.8 5.5 3.8 9S14.5 18.5 12 21c-2.5-2.5-3.8-5.5-3.8-9S9.5 5.5 12 3z"/>'};
+const I=(n,c="")=>`<svg class="ic ${c}" viewBox="0 0 24 24" aria-hidden="true">${P[n]||P.sparkle}</svg>`;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ---------- mascot ---------- */
+let mid=0;
+function mascot(cls=""){const g=++mid;return `<svg class="mascot ${cls}" viewBox="-6 -6 112 112" aria-label="Доми">
+<defs><linearGradient id="mb${g}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFB37A"/><stop offset="1" stop-color="#F28A3C"/></linearGradient>
+<linearGradient id="mr${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2B3A6B"/><stop offset="1" stop-color="#17233F"/></linearGradient></defs>
+<ellipse class="shadow" cx="50" cy="93" rx="32" ry="4" fill="#17233F" fill-opacity=".16"/>
+<g class="bodyg"><g class="smoke"><circle cx="72" cy="10" r="3.5" fill="#FFB37A"/><circle cx="75" cy="6" r="4.5" fill="#FFB37A"/></g>
+<rect x="66" y="14" width="9" height="18" rx="3" fill="#22305A"/>
+<rect x="20" y="40" width="60" height="50" rx="14" fill="url(#mb${g})"/>
+<path d="M12 46Q10 42 14 39L46 15Q50 12 54 15L86 39Q90 42 88 46Q86 49 82 48L18 48Q14 49 12 46Z" fill="url(#mr${g})"/>
+<path d="M50 14V6" stroke="#17233F" stroke-width="2.2" stroke-linecap="round"/>
+<path class="spark" d="M50 .8L51.6 3.4L54.2 5L51.6 6.6L50 9.2L48.4 6.6L45.8 5L48.4 3.4Z" fill="#B9F36B"/>
+<rect x="26" y="46" width="48" height="10" rx="5" fill="#fff" fill-opacity=".24"/>
+<g class="eyes"><g class="open"><ellipse cx="39" cy="62" rx="7" ry="8.5" fill="#fff"/><ellipse cx="61" cy="62" rx="7" ry="8.5" fill="#fff"/>
+<g class="pupils"><circle cx="39" cy="62.5" r="4.2" fill="#17233F"/><circle cx="61" cy="62.5" r="4.2" fill="#17233F"/><circle cx="40.5" cy="61" r="1.3" fill="#fff"/><circle cx="62.5" cy="61" r="1.3" fill="#fff"/></g></g>
+<path class="happy" d="M34 63Q39 57 44 63M56 63Q61 57 66 63" stroke="#17233F" stroke-width="3" stroke-linecap="round" fill="none"/></g>
+<ellipse cx="29" cy="72" rx="4.5" ry="3" fill="#FF7878" fill-opacity=".35"/><ellipse cx="71" cy="72" rx="4.5" ry="3" fill="#FF7878" fill-opacity=".35"/>
+<path class="mouth" d="M44 73.5Q50 78.5 56 73.5" stroke="#7A2E14" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+<rect x="45" y="82" width="10" height="8" rx="3" fill="#17233F" fill-opacity=".2"/></g></svg>`}
+document.addEventListener("pointermove",e=>{for(const m of document.querySelectorAll(".mascot:not(.is-happy):not(.think)")){const r=m.getBoundingClientRect();if(!r.width)continue;const dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height*.6),d=Math.max(1,Math.hypot(dx,dy)),k=Math.min(1,d/220);const p=m.querySelector(".pupils");if(p)p.style.transform=`translate(${(dx/d*2.6*k).toFixed(2)}px,${(dy/d*2.2*k).toFixed(2)}px)`}},{passive:true});
+
+/* ---------- covers (procedural skylines, same algorithm as the app) ---------- */
+const SKIES=[["#FFD3A8","#F28A3C","#7A3E1C"],["#BFE3FF","#5B8DEF","#1E3A78"],["#DCD2FF","#7B6CF6","#2E2470"],["#C5F2DD","#3FA77A","#164A35"],["#3D4E85","#17233F","#0A0F1F"],["#FFC9C2","#E0584B","#5E1E18"]];
+function hash(s){let h=2166136261;for(const c of s)h=Math.imul(h^c.charCodeAt(0),16777619);return h>>>0}
+function rng(seed){let a=seed;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function drawCover(cv,name){const r=cv.getBoundingClientRect();const w=Math.max(40,r.width),h=Math.max(40,r.height),dpr=Math.min(2,window.devicePixelRatio||1);cv.width=w*dpr;cv.height=h*dpr;const x=cv.getContext("2d");x.scale(dpr,dpr);
+ const seed=hash(name),R=rng(seed),[top,mid,deep]=SKIES[seed%SKIES.length],night=top==="#3D4E85";
+ let g=x.createLinearGradient(0,0,w*.3,h);g.addColorStop(0,top);g.addColorStop(1,mid);x.fillStyle=g;x.fillRect(0,0,w,h);
+ const sx=w*(.62+R()*.24),sy=h*(.18+R()*.16),sr=h*.13;let rg=x.createRadialGradient(sx,sy,0,sx,sy,sr*3);rg.addColorStop(0,"rgba(255,250,230,.6)");rg.addColorStop(1,"rgba(255,250,230,0)");x.fillStyle=rg;x.beginPath();x.arc(sx,sy,sr*3,0,7);x.fill();
+ x.fillStyle=night?"#E9ECFF":"#FFF6DA";x.beginPath();x.arc(sx,sy,sr,0,7);x.fill();
+ x.fillStyle="rgba(255,255,255,.28)";for(let i=0;i<3;i++){const cx=R()*w,cy=h*(.1+R()*.3);for(let k=0;k<3;k++){x.beginPath();x.ellipse(cx+k*16,cy+(k%2)*4,18,10,0,0,7);x.fill()}}
+ const rgb=h2=>[parseInt(h2.slice(1,3),16),parseInt(h2.slice(3,5),16),parseInt(h2.slice(5,7),16)],[dr,dg,db]=rgb(deep);
+ x.fillStyle=`rgba(${dr},${dg},${db},.28)`;let px=-10;while(px<w){const bw=26+R()*22,bh=h*(.25+R()*.25);x.fillRect(px,h-bh,bw,bh);px+=bw+2+R()*8}
+ px=-R()*20;while(px<w){const bw=34+R()*28,bh=h*(.38+R()*.4);x.fillStyle=`rgba(${dr},${dg},${db},.85)`;x.beginPath();x.roundRect?x.roundRect(px,h-bh,bw,bh+10,5):x.rect(px,h-bh,bw,bh+10);x.fill();
+  x.fillStyle="rgba(255,230,168,.82)";for(let wy=h-bh+10;wy<h-8;wy+=11)for(let wx=px+6;wx<px+bw-6;wx+=9)if(R()<(night?.6:.45))x.fillRect(wx,wy,4,5);px+=bw+4+R()*8}
+ g=x.createLinearGradient(0,h*.7,0,h);g.addColorStop(0,"rgba(0,0,0,0)");g.addColorStop(1,"rgba(0,0,0,.27)");x.fillStyle=g;x.fillRect(0,0,w,h)}
+function paintCovers(root=document){requestAnimationFrame(()=>root.querySelectorAll("canvas[data-cover]").forEach(c=>drawCover(c,c.dataset.cover)))}
+
+/* ---------- small builders ---------- */
+function ring(v,size=58,stroke=6,caption=""){const r=(size-stroke)/2,c=2*Math.PI*r;return `<div class="ring" style="width:${size}px;height:${size}px"><svg width="${size}" height="${size}"><circle class="trk" cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke-width="${stroke}"/><circle class="val" data-v="${v}" cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${scoreColor(v)}" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c}"/></svg><b class="tnum" data-count="${v}" style="font-size:${Math.round(size*.3)}px;${caption?"margin-top:-"+Math.round(size*.1)+"px":""}">0</b>${caption?`<small>${caption}</small>`:""}</div>`}
+function animateIn(root){requestAnimationFrame(()=>requestAnimationFrame(()=>{
+  root.querySelectorAll(".ring .val").forEach(el=>{const r=+el.getAttribute("r"),c=2*Math.PI*r;el.style.strokeDashoffset=c*(1-el.dataset.v/100)});
+  root.querySelectorAll(".bar i[data-w]").forEach(el=>el.style.width=el.dataset.w+"%");
+  root.querySelectorAll("[data-count]").forEach(el=>countUp(el,+el.dataset.count,el.dataset.dec?+el.dataset.dec:0))}))}
+function countUp(el,to,dec=0){const t0=performance.now(),dur=1100;const step=n=>{const p=Math.min(1,(n-t0)/dur),e=1-Math.pow(1-p,3);el.textContent=(to*e).toFixed(dec).replace(/\B(?=(\d{3})+(?!\d))/g," ");if(p<1)requestAnimationFrame(step)};requestAnimationFrame(step)}
+const stars=r=>`<span class="stars">${[0,1,2,3,4].map(i=>i<Math.round(r)?I("star","f"):`<span class="e">${I("star")}</span>`).join("")}</span>`;
+const initials=n=>n.replace(/\./g,"").split(" ").filter(Boolean).slice(0,2).map(w=>w[0]).join("").toUpperCase();
+const AV=["#F28A3C","#5B8DEF","#3FA77A","#7B6CF6","#E0584B","#D9822B","#2BB3C0"];
+const avatar=(n,s=40)=>`<span class="avatar" style="width:${s}px;height:${s}px;font-size:${Math.round(s*.36)}px;background:linear-gradient(135deg,${AV[hash(n)%AV.length]}cc,${AV[hash(n)%AV.length]})">${esc(initials(n))}</span>`;
+function devCard(d){const sel=S.cmp.has(d.id),fav=S.fav.has(d.id),price=S.mode===0?d.buy+" ₸":d.rent+" ₸ / мес",m=personal(d);
+ return `<article class="card hover dev${sel?" sel":""}" data-open="${d.id}" tabindex="0" aria-label="${esc(d.name)}">
+ <div class="cover"><canvas data-cover="${esc(d.name)}"></canvas><span class="badge light tl">${esc(d.klass)}</span>
+ <button class="fav${fav?" on":""}" data-fav="${d.id}" aria-label="В избранное">${I("heart")}</button></div>
+ <div class="row"><div style="flex:1;min-width:0"><div class="name">${esc(d.name)}</div><div class="addr">${esc(d.address)}</div><div class="rv">${d.reviews} отзывов</div></div>${ring(d.score)}</div>
+ <div class="row"><span class="bubble" style="width:32px;height:32px;border-radius:10px">${I("wallet")}</span><div style="flex:1"><div class="pl">${S.mode===0?"Покупка от":"Аренда"}</div><div class="pv tnum">${price}</div></div>${stars(d.rating)}<b style="font-size:12px">${d.rating}</b></div>
+ <div class="match">${I("sparkle")}<span class="bar"><i data-w="${m}"></i></span><span class="tnum">${m}% совпадение</span></div>
+ <div class="foot"><button class="chip${sel?" on":""}" data-cmp="${d.id}">${I("compare")}${sel?"В сравнении":"Сравнить"}</button><button class="btn soft sm" data-open="${d.id}">${I("next")}Подробнее</button></div></article>`}
+function revCard(r,showDev=true){const d=byName(r.dev);return `<article class="card hover rev"><div class="hd">${avatar(r.author)}<div style="flex:1"><b>${esc(r.author)}</b><small>${r.date}</small></div>${stars(r.rating)}</div><p>${esc(r.text)}</p>
+ <div class="ft"><span class="badge neutral">Демо-данные</span>${showDev&&d?`<button class="link" data-open="${d.id}">${I("building")}${esc(d.name)}</button>`:""}</div></article>`}
+function emptyState(title,sub,btn,route,mood="think"){return `<div class="card empty">${mascot(mood==="happy"?"is-happy":"")}<h2>${title}</h2><p>${sub}</p>${btn?`<button class="btn primary" data-go="${route}">${I("next")}${btn}</button>`:""}</div>`}
+
+/* ---------- toasts ---------- */
+function toast(msg,ok=true){const el=document.createElement("div");el.className="toast";el.innerHTML=`<i class="${ok?"ok":""}">${I(ok?"check":"sparkle")}</i>${esc(msg)}`;document.getElementById("toasts").appendChild(el);setTimeout(()=>{el.classList.add("out");setTimeout(()=>el.remove(),320)},2400)}
+
+/* ---------- shell ---------- */
+const NAV=[["home","home"],["catalog","grid"],["map","map"],["favorites","heart"],["compare","compare"],["comfort","sliders"],["assistant","sparkle"]];
+function renderShell(){
+ document.getElementById("side").innerHTML=`<div class="brand"><span class="mark">${I("home")}</span><div><b>HouseCheck</b><small>AI · Астана</small></div></div>
+ <div class="sec-label">${t("work")}</div>${NAV.map(([r,ic])=>`<button class="nav" data-go="${r}" data-r="${r}">${I(ic)}<span class="label-long">${t(r)}</span>${r==="favorites"||r==="compare"?`<span class="cnt" id="cnt-${r}"></span>`:""}</button>`).join("")}
+ <div class="sec-label" style="margin-top:14px">${t("data")}</div><button class="nav" data-go="reviews" data-r="reviews">${I("chat")}<span class="label-long">${t("reviews")}</span></button>
+ <button class="nav" data-r="admin" data-toast="Раздел администрирования работает в настольном приложении">${I("settings")}<span class="label-long">${t("admin")}</span></button>
+ <button class="promo" data-go="assistant"><div style="flex:1"><b>${t("promoT")}</b><span>${t("promoS")}</span></div><span style="width:62px;height:62px;display:block">${mascot("is-happy")}</span></button>
+ <div class="side-note">Демо-режим: отзывы помечены источником «Демо-данные». Реальные — через Google Places или импорт.</div>`;
+ const th=document.documentElement.dataset.theme==="dark"?1:document.documentElement.dataset.theme==="light"?0:2;
+ document.getElementById("top").innerHTML=`<button class="searchbtn" id="openPal">${I("search")}<span>${t("search")}</span><kbd>${navigator.platform.includes("Mac")?"⌘K":"Ctrl K"}</kbd></button><span class="spacer"></span>
+ <div class="seg" id="themeSeg" role="group" aria-label="Тема"><span class="knob"></span>${[["sun","Светлая"],["moon","Тёмная"],["monitor","Системная"]].map(([ic,l],i)=>`<button data-theme-i="${i}" class="${i===th?"on":""}" title="${l}" aria-label="${l}">${I(ic)}</button>`).join("")}</div>
+ <div class="seg lang" id="langSeg" role="group" aria-label="Язык"><span class="knob"></span>${["ru","kk","en"].map(l=>`<button data-lang="${l}" class="${l===S.lang?"on":""}">${l==="kk"?"KZ":l.toUpperCase()}</button>`).join("")}</div>
+ <div class="user">${avatar("super admin")}<div><b>super_admin</b><small>super_admin</small></div></div>
+ <button class="iconbtn" id="logout" title="Выйти" aria-label="Выйти">${I("logout")}</button>`;
+ document.getElementById("floater").innerHTML=`<span class="say">${t("ask")}</span><span data-go="assistant" role="button" aria-label="Открыть ИИ-помощника">${mascot()}</span>`;
+ placeKnobs();updateCounts();markNav();}
+function placeKnobs(){for(const s of document.querySelectorAll(".seg")){const on=s.querySelector("button.on"),k=s.querySelector(".knob");if(on&&k){k.style.left=on.offsetLeft+"px";k.style.width=on.offsetWidth+"px"}}}
+function updateCounts(bump){for(const [k,set] of [["favorites",S.fav],["compare",S.cmp]]){const el=document.getElementById("cnt-"+k);if(!el)continue;el.textContent=set.size;el.hidden=!set.size;if(bump===k){el.classList.remove("bump");void el.offsetWidth;el.classList.add("bump");setTimeout(()=>el.classList.remove("bump"),260)}}
+ const tray=document.getElementById("tray");const show=S.cmp.size>0&&curRoute().name==="catalog";
+ tray.innerHTML=`<span class="bubble">${I("compare")}</span><b>Выбрано ${S.cmp.size} из 3</b><button class="btn glass" id="clearCmp">${I("close")}Сбросить</button><button class="btn primary" data-go="compare">${I("compare")}Сравнить</button>`;
+ tray.classList.toggle("show",show)}
+function markNav(){const r=curRoute().name;document.querySelectorAll(".nav").forEach(n=>n.classList.toggle("active",n.dataset.r===r||(r==="complex"&&n.dataset.r==="catalog")))}
+
+/* ---------- router ---------- */
+const VALID=["home","catalog","map","favorites","compare","comfort","assistant","reviews"];
+function curRoute(){const h=location.hash.slice(1);if(/^complex-\d+$/.test(h))return{name:"complex",id:+h.split("-")[1]};return{name:VALID.includes(h)?h:"home"}}
+let lastList="catalog";
+function go(r){if(location.hash.slice(1)===r)render();else location.hash=r}
+function render(){if(!S.loggedIn)return;const r=curRoute();if(r.name!=="complex")lastList=r.name;
+ const v=document.getElementById("view");v.scrollTop=0;
+ const html=({home:pHome,catalog:pCatalog,complex:()=>pComplex(r.id),map:pMap,favorites:pFav,compare:pCompare,comfort:pComfort,assistant:pAssistant,reviews:pReviews})[r.name]();
+ v.innerHTML=`<div class="page">${html}</div>`;paintCovers(v);animateIn(v);markNav();updateCounts();
+ document.getElementById("floater").hidden=r.name==="assistant";
+ ({map:initMap,assistant:initChat,comfort:initComfort,complex:()=>initComplex(r.id)})[r.name]?.()}
+window.addEventListener("hashchange",render);
+
+/* ---------- pages ---------- */
+function pHome(){const h=new Date().getHours(),greet=h<12?"Доброе утро":h<18?"Добрый день":"Добрый вечер";
+ const avg=Math.round(DEVS.reduce((s,d)=>s+d.score,0)/DEVS.length);
+ const top=[...DEVS].sort((a,b)=>personal(b)-personal(a)).slice(0,3);
+ return `<section class="dark-card hero"><div style="flex:1;min-width:0"><span class="badge" style="background:#2B3A6B;color:#FFB37A">✦ HouseCheck AI · Астана</span><h1>${greet}, super_admin!</h1>
+ <p>Сравнивайте условия жизни, а не только квадратные метры. Доми прочитал отзывы жителей и подобрал лучшие варианты под ваш профиль.</p>
+ <div class="ctas"><button class="btn primary lg" data-go="catalog">${I("search")}Найти свой ЖК</button><button class="btn glass lg" data-go="assistant">${I("sparkle")}Спросить Доми</button></div></div>${mascot("is-happy")}</section>
+ <section class="stats stagger">${[["building","accent-soft","accent",DEVS.length,"ЖК в каталоге","catalog"],["chat","sky","#5B8DEF",DATA.t,"Отзывов в анализе","reviews"],["trophy","mint","pos",avg,"Средний индекс","catalog"],["heart","lilac","#7B6CF6",S.fav.size,"В избранном","favorites"]].map(([ic,bg,fg,v,c,r])=>`<button class="card hover stat" data-go="${r}" style="text-align:left"><span class="bubble" style="width:48px;height:48px;background:var(--${bg});color:${fg.startsWith("#")?fg:"var(--"+fg+")"}">${I(ic)}</span><div><b class="tnum" data-count="${v}">0</b><small>${c}</small></div></button>`).join("")}</section>
+ <div class="head"><div><h2>Подобрано для вас</h2><p class="sub">По вашему профилю комфорта</p></div><button class="btn ghost" data-go="catalog">Смотреть все${I("next")}</button></div>
+ <section class="grid stagger">${top.map(devCard).join("")}</section>
+ <div class="head"><div><h2>Свежие отзывы</h2></div><button class="btn ghost" data-go="reviews">Смотреть все${I("next")}</button></div>
+ <section class="grid stagger" style="grid-template-columns:repeat(auto-fill,minmax(380px,1fr))">${REVS.slice(0,4).map(r=>revCard(r)).join("")}</section>`}
+
+function filtered(){const q=S.q.trim().toLowerCase();let it=DEVS.filter(d=>!q||(d.name+" "+d.address+" "+d.district).toLowerCase().includes(q));
+ if(S.district)it=it.filter(d=>d.district===S.district);if(S.klass)it=it.filter(d=>d.klass===S.klass);
+ const pf=d=>parseFloat((S.mode===0?d.buy:d.rent).replace(/\s/g,""))*(S.mode===0?1:1);
+ const keys=[d=>-d.score,d=>-personal(d),d=>pf(d),d=>-pf(d),d=>-d.reviews,d=>d.name];
+ return it.sort((a,b)=>{const ka=keys[S.sort](a),kb=keys[S.sort](b);return ka<kb?-1:ka>kb?1:0})}
+function pCatalog(){const ds=[...new Set(DEVS.map(d=>d.district))].sort();
+ return `<div class="head"><div><h1>Жилые комплексы</h1><p class="sub">Сравните условия жизни, а не только квадратные метры.</p></div>
+ <button class="btn secondary" data-toast="Импорт JSON/CSV работает в настольном приложении">${I("upload")}Импорт</button><button class="btn primary" data-toast="Добавление ЖК работает в настольном приложении">${I("plus")}Добавить ЖК</button></div>
+ <section class="card filters"><div class="frow"><label class="field">${I("search")}<input id="q" placeholder="Название, адрес или район" value="${esc(S.q)}" autocomplete="off"></label>
+ <div class="seg" id="modeSeg"><span class="knob"></span><button data-mode="0" class="${S.mode===0?"on":""}">Покупка</button><button data-mode="1" class="${S.mode===1?"on":""}">Аренда</button></div>
+ <select class="sel" id="sort" aria-label="Сортировка">${["По комфорту","По совпадению","Сначала дешевле","Сначала дороже","По отзывам","По названию"].map((l,i)=>`<option value="${i}" ${i===S.sort?"selected":""}>${l}</option>`).join("")}</select></div>
+ <div class="chips"><button class="chip${!S.district?" on":""}" data-district="">Все</button>${ds.map(d=>`<button class="chip${S.district===d?" on":""}" data-district="${esc(d)}">${I("pin")}${esc(d)}</button>`).join("")}</div>
+ <div class="chips"><span class="lbl">Класс:</span>${["Эконом","Комфорт","Комфорт+","Бизнес","Премиум"].map(k=>`<button class="chip${S.klass===k?" on":""}" data-klass="${k}">${k}</button>`).join("")}</div></section>
+ <div class="found tnum" id="found"></div><section class="grid stagger" id="cgrid"></section>`}
+function fillCatalog(){const g=document.getElementById("cgrid");if(!g)return;const it=filtered();document.getElementById("found").textContent=`Найдено: ${it.length}`;
+ g.innerHTML=it.length?it.map(devCard).join(""):emptyState("Ничего не нашлось","Попробуйте изменить запрос или сбросить фильтры.");paintCovers(g);animateIn(g);
+ requestAnimationFrame(placeKnobs)}
+
+function pComplex(id){const d=DEVS[id];if(!d)return emptyState("ЖК не найден","Вернитесь в каталог.","Каталог","catalog");
+ const revs=REVS.filter(r=>r.dev===d.name),fav=S.fav.has(id),cmp=S.cmp.has(id),m=personal(d);
+ const gm="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(d.name+", Астана, Казахстан");
+ return `<section class="card dhero"><div class="dcover"><canvas data-cover="${esc(d.name)}"></canvas><div class="over"><div class="tb"><button class="btn glass sm" data-go="${lastList}">${I("back")}Назад</button><span class="spacer"></span><span class="badge light">${esc(d.klass)}</span><span class="badge navy">${esc(d.district)} район</span></div>
+ <h1>${esc(d.name)}</h1><p>Астана · ${esc(d.address)}</p></div></div>
+ <div class="actions"><button class="btn ${fav?"primary":"secondary"}" data-fav="${id}">${I("heart")}${fav?"В избранном":"В избранное"}</button>
+ <button class="btn ${cmp?"dark":"secondary"}" data-cmp="${id}">${I("compare")}${cmp?"В сравнении":"Сравнить"}</button>
+ <a class="btn secondary" href="${gm}" target="_blank" rel="noopener">${I("pin")}Google Maps</a><span class="spacer"></span>
+ <button class="btn soft" data-toast="Загрузка отзывов Google Places работает в приложении при наличии API-ключа">${I("refresh")}Обновить отзывы Google</button></div></section>
+ <div class="cols"><div class="col stagger">
+ <section class="dark-card score"><div class="rings">${ring(d.score,124,12,"/ 100")}${ring(m,84,8,"для вас")}</div><h2>Индекс комфорта</h2><p>${esc(d.mood)}. Оценка рассчитана по ${d.reviews} отзывам.</p></section>
+ <section class="card pad"><h2>По категориям</h2>${CATS.map(c=>`<div class="meter">${I(CAT_ICON[c])}<span>${c==="Сервис"?"Сервис УК":c}</span><span class="bar"><i data-w="${d.cats[c]}" style="background:linear-gradient(90deg,color-mix(in srgb,${scoreColor(d.cats[c])} 55%,transparent),${scoreColor(d.cats[c])})"></i></span><b class="tnum" data-count="${d.cats[c]}">0</b></div>`).join("")}</section>
+ <section class="card pad"><h2 style="font-size:15px;color:var(--pos)">Плюсы</h2><div class="chips">${(d.pros.length?d.pros:["недостаточно данных"]).map(p=>`<span class="badge pos">✓ ${esc(p)}</span>`).join("")}</div>
+ <h2 style="font-size:15px;color:var(--warn)">Обратить внимание</h2><div class="chips">${(d.cons.length?d.cons:["повторяющихся сигналов нет"]).map(p=>`<span class="badge warn">! ${esc(p)}</span>`).join("")}</div></section>
+ <section class="card pad"><h2>О комплексе</h2><div class="facts">${[["Класс","layers",d.klass],["Год сдачи","calendar",d.year],["Этажность","building",d.floors],["Квартир","home",d.units],["Покупка от","wallet",d.buy+" ₸"],["Аренда в мес.","wallet",d.rent+" ₸"]].map(([l,ic,v])=>`<div class="fact"><span class="bubble">${I(ic)}</span><div><small>${l}</small><b class="tnum">${esc(v)}</b></div></div>`).join("")}</div></section>
+ </div><div class="col"><div class="head" style="padding:4px 4px 0"><div><h2>Отзывы жителей <span class="badge">${revs.length}</span></h2></div></div>
+ <div class="col stagger" style="gap:14px">${revs.length?revs.slice(0,8).map(r=>revCard(r,false)).join(""):emptyState("Нет отзывов в демо-выборке","В приложении отзывы загружаются из Google Places или импорта.")}</div>
+ <section class="card pad"><h2>Личная заметка</h2><textarea class="note" id="note" placeholder="Например: посмотреть квартиру в субботу, уточнить про паркинг…">${esc(S.notes[id]||"")}</textarea><div style="display:flex;justify-content:flex-end"><button class="btn primary" id="saveNote">${I("check")}Сохранить заметку</button></div></section></div></div>`}
+function initComplex(id){}
+
+/* map */
+const LAT0=51.055,LAT1=51.2,LNG0=71.35,LNG1=71.51,KX=Math.cos(51.13*Math.PI/180);
+const RIVER=[[51.168,71.35],[51.16,71.372],[51.15,71.39],[51.138,71.402],[51.128,71.412],[51.122,71.425],[51.126,71.44],[51.138,71.452],[51.152,71.46],[51.158,71.475],[51.15,71.492],[51.138,71.51]];
+const ROADS=[[[51.08,71.414],[51.11,71.414],[51.135,71.414],[51.165,71.412],[51.195,71.41]],[[51.075,71.44],[51.12,71.432],[51.15,71.43],[51.195,71.428]],[[51.16,71.355],[51.165,71.42],[51.17,71.505]],[[51.1,71.36],[51.1,71.44],[51.095,71.505]],[[51.135,71.36],[51.135,71.505]]];
+const PARKS=[[51.1255,71.43,.0045,.01],[51.105,71.415,.004,.009],[51.143,71.443,.003,.007],[51.118,71.45,.0035,.008]];
+const MLABELS=[["ЕСИЛЬ",51.098,71.39],["САРЫАРКА",51.185,71.385],["БАЙКОНУР",51.178,71.445],["АЛМАТЫ",51.15,71.49],["НУРА",51.067,71.47]];
+const MW=1000,MH=Math.round(MW*(LAT1-LAT0)/((LNG1-LNG0)*KX));
+const proj=(lat,lng)=>[((lng-LNG0)/(LNG1-LNG0))*MW,((LAT1-lat)/(LAT1-LAT0))*MH];
+const pathOf=pts=>{const p=pts.map(([a,b])=>proj(a,b));let s=`M${p[0][0].toFixed(1)},${p[0][1].toFixed(1)}`;for(let i=1;i<p.length;i++){const m=[(p[i-1][0]+p[i][0])/2,(p[i-1][1]+p[i][1])/2];s+=` Q${p[i-1][0].toFixed(1)},${p[i-1][1].toFixed(1)} ${m[0].toFixed(1)},${m[1].toFixed(1)}`}const l=p[p.length-1];return s+` L${l[0].toFixed(1)},${l[1].toFixed(1)}`};
+function pMap(){return `<div class="head"><div><h1>Карта районов</h1><p class="sub">Пины окрашены по индексу комфорта. Колесо мыши или кнопки — масштаб, перетаскивание — перемещение.</p></div></div>
+ <div class="maplay"><section class="card mapbox"><svg class="mapsvg" id="msvg" viewBox="0 0 ${MW} ${MH}" preserveAspectRatio="xMidYMid meet"><g id="mg">
+ <defs><pattern id="gridp" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="var(--grid)" stroke-width="1"/></pattern></defs>
+ <rect x="-2000" y="-2000" width="5000" height="5000" fill="url(#gridp)"/>
+ ${PARKS.map(([la,ln,dl,dg])=>{const [x1,y1]=proj(la+dl,ln-dg),[x2,y2]=proj(la-dl,ln+dg);return `<rect x="${x1}" y="${y1}" width="${x2-x1}" height="${y2-y1}" rx="14" fill="var(--park)"/>`}).join("")}
+ ${ROADS.map(r=>`<path d="${pathOf(r)}" fill="none" stroke="var(--border-2)" stroke-width="9" stroke-linecap="round"/><path d="${pathOf(r)}" fill="none" stroke="var(--road)" stroke-width="5.5" stroke-linecap="round"/>`).join("")}
+ <path d="${pathOf(RIVER)}" fill="none" stroke="var(--water)" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/><path d="${pathOf(RIVER)}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2" stroke-dasharray="8 10"/>
+ ${MLABELS.map(([l,a,b])=>{const [x,y]=proj(a,b);return `<text x="${x}" y="${y}" text-anchor="middle" font-size="15" font-weight="800" fill="var(--text-3)" letter-spacing="2">${l}</text>`}).join("")}
+ ${(()=>{const [x,y]=proj(51.133,71.398);return `<text x="${x}" y="${y-18}" text-anchor="middle" font-size="12" font-weight="700" fill="#3E7CB1">р. Есиль</text>`})()}
+ <g id="pins">${[...DEVS].sort((a,b)=>b.lat-a.lat).map(d=>{const [x,y]=proj(d.lat,d.lng);return `<g class="pin" data-pin="${d.id}" transform="translate(${x.toFixed(1)},${y.toFixed(1)})"><circle class="pulse" r="6" fill="${scoreColor(d.score)}" opacity="0"/><ellipse rx="7" ry="3" fill="rgba(0,0,0,.18)"/><g class="head"><path d="M0,0 C-5,-9 -14,-12 -14,-24 A14,14 0 1 1 14,-24 C14,-12 5,-9 0,0Z" fill="${scoreColor(d.score)}" stroke="#fff" stroke-width="2.5"/><text y="-20" text-anchor="middle" font-size="11" font-weight="800" fill="#fff">${d.score}</text></g></g>`}).join("")}</g></g></svg>
+ <div class="tip" id="tip" style="opacity:0"></div><div class="zoom"><button id="zin" aria-label="Приблизить">+</button><button id="zout" aria-label="Отдалить">−</button></div>
+ <div class="legend"><span><i style="background:var(--pos)"></i>80+</span><span><i style="background:var(--accent)"></i>65+</span><span><i style="background:var(--warn)"></i>50+</span><span><i style="background:var(--danger)"></i>&lt;50</span></div></section>
+ <div class="col"><section class="dark-card pad" id="minfo" style="padding:22px"></section><section class="card mlist" id="mlist">${[...DEVS].sort((a,b)=>b.score-a.score).map(d=>`<button class="mitem" data-pinsel="${d.id}"><i class="dot" style="background:${scoreColor(d.score)}"></i><span>${esc(d.name)}</span><b class="tnum">${d.score}</b></button>`).join("")}</section></div></div>`}
+function initMap(){const svg=document.getElementById("msvg"),g=document.getElementById("mg"),tip=document.getElementById("tip");let z=1,tx=0,ty=0,drag=null,moved=false;
+ const apply=()=>g.setAttribute("transform",`translate(${tx},${ty}) scale(${z})`);
+ const toSvg=(cx,cy)=>{const r=svg.getBoundingClientRect(),s=Math.min(r.width/MW,r.height/MH),ox=(r.width-MW*s)/2,oy=(r.height-MH*s)/2;return[(cx-r.left-ox)/s,(cy-r.top-oy)/s]};
+ const zoomAt=(f,cx,cy)=>{const nz=Math.max(.8,Math.min(4,z*f)),[sx,sy]=toSvg(cx,cy);tx=sx-(sx-tx)*nz/z;ty=sy-(sy-ty)*nz/z;z=nz;apply()};
+ svg.addEventListener("wheel",e=>{e.preventDefault();zoomAt(e.deltaY<0?1.15:1/1.15,e.clientX,e.clientY)},{passive:false});
+ svg.addEventListener("pointerdown",e=>{drag=[e.clientX,e.clientY,tx,ty];moved=false;svg.setPointerCapture(e.pointerId)});
+ svg.addEventListener("pointermove",e=>{if(drag){const r=svg.getBoundingClientRect(),s=Math.min(r.width/MW,r.height/MH),dx=(e.clientX-drag[0])/s,dy=(e.clientY-drag[1])/s;if(Math.abs(dx)+Math.abs(dy)>3)moved=true;tx=drag[2]+dx;ty=drag[3]+dy;apply()}});
+ svg.addEventListener("pointerup",e=>{drag=null;if(!moved){const pin=document.elementFromPoint(e.clientX,e.clientY)?.closest("[data-pin]");if(pin)selectPin(+pin.dataset.pin)}});
+ document.getElementById("zin").onclick=()=>{const r=svg.getBoundingClientRect();zoomAt(1.3,r.left+r.width/2,r.top+r.height/2)};
+ document.getElementById("zout").onclick=()=>{const r=svg.getBoundingClientRect();zoomAt(1/1.3,r.left+r.width/2,r.top+r.height/2)};
+ svg.querySelectorAll(".pin").forEach(p=>{p.addEventListener("pointerenter",()=>{const d=DEVS[+p.dataset.pin],pr=p.getBoundingClientRect(),br=svg.parentElement.getBoundingClientRect();tip.innerHTML=`<b>${esc(d.name)}</b><small>${esc(d.address)}</small>`;tip.style.left=(pr.left+pr.width/2-br.left)+"px";tip.style.top=(pr.bottom-br.top)+"px";tip.style.opacity=1});p.addEventListener("pointerleave",()=>tip.style.opacity=0)});
+ selectPin(S.mapSel??DEVS[0].id)}
+function selectPin(id){S.mapSel=id;const d=DEVS[id];document.querySelectorAll(".pin").forEach(p=>p.classList.toggle("on",+p.dataset.pin===id));
+ const on=document.querySelector(`.pin[data-pin="${id}"]`);on?.parentNode.appendChild(on);
+ document.querySelectorAll(".mitem").forEach(m=>m.classList.toggle("on",+m.dataset.pinsel===id));
+ const box=document.getElementById("minfo");box.innerHTML=`<div style="display:flex;gap:12px;align-items:center;position:relative"><div style="flex:1;min-width:0"><h2 style="color:#fff;font-size:20px">${esc(d.name)}</h2><p style="color:var(--on-dark-2);margin:4px 0;font-size:12px">${esc(d.address)} · ${esc(d.district)}</p><b style="color:#FFB37A;font-size:12px">${d.reviews} отзывов · ${d.buy} ₸</b></div>${ring(d.score,84,8)}</div>
+ <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;position:relative"><button class="btn primary" data-open="${id}">${I("next")}Открыть</button><a class="btn glass" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(d.name+", Астана")}">${I("external")}Google Maps</a></div>`;animateIn(box)}
+
+function pFav(){const it=DEVS.filter(d=>S.fav.has(d.id));return `<div class="head"><div><h1>Избранное</h1><p class="sub">Сохранённые ЖК для быстрого сравнения.</p></div></div>
+ ${it.length?`<section class="grid stagger">${it.map(devCard).join("")}</section>`:emptyState("Здесь пока пусто","Нажмите ♥ на карточке ЖК, чтобы сохранить его.","Перейти в каталог","catalog","happy")}`}
+
+function pCompare(){const it=[...S.cmp].map(i=>DEVS[i]).filter(Boolean);
+ if(!it.length)return `<div class="head"><div><h1>Сравнение</h1><p class="sub">До трёх ЖК бок о бок. Лучшее значение подсвечено.</p></div></div>${emptyState("Выберите ЖК для сравнения","Нажмите «Сравнить» на карточках в каталоге.","Перейти в каталог","catalog")}`;
+ const rows=[["Индекс комфорта","sparkle",d=>d.score],["Для вас","sparkle",d=>personal(d)],...CATS.map(c=>[c==="Сервис"?"Сервис УК":c,CAT_ICON[c],d=>d.cats[c]])];
+ const win=it.length>1?it.reduce((a,b)=>b.score>a.score?b:a):null;
+ return `<div class="head"><div><h1>Сравнение</h1><p class="sub">До трёх ЖК бок о бок. Лучшее значение подсвечено.</p></div></div><section class="cmp stagger">${it.map(d=>`<article class="card cmpcol${d===win?" win":""}">
+ <div class="cover"><canvas data-cover="${esc(d.name)}"></canvas>${d===win?`<span class="badge light tl">🏆 Лидер</span>`:""}<button class="fav" data-uncmp="${d.id}" aria-label="Убрать из сравнения">${I("close")}</button></div>
+ <div style="display:flex;justify-content:center">${ring(d.score,96,9)}</div><h3>${esc(d.name)}</h3><div class="c-sub">${esc(d.klass)} · ${esc(d.district)}</div><div class="hr"></div>
+ ${rows.map(([l,ic,f])=>{const v=f(d),best=it.length>1&&v===Math.max(...it.map(f));return `<div class="mrow${best?" best":""}"><span class="bubble">${I(ic)}</span><span>${l}</span><b class="tnum">${v}${best?" ★":""}</b></div>`}).join("")}
+ <div class="hr"></div><div class="mrow"><span>Покупка от</span><b class="tnum">${d.buy} ₸</b></div><div class="mrow"><span>Аренда в мес.</span><b class="tnum">${d.rent} ₸</b></div><div class="mrow"><span>Отзывы</span><b>${d.reviews}</b></div>
+ <button class="btn soft" style="justify-content:center" data-open="${d.id}">${I("next")}Подробнее</button></article>`).join("")}
+ ${it.length<3?`<button class="slot" data-go="catalog"><span class="bubble" style="width:64px;height:64px;border-radius:20px">${I("plus")}</span>Добавить из каталога</button>`:""}</section>`}
+
+function pComfort(){return `<div class="head"><div><h1>Мой комфорт</h1><p class="sub">Настройте, что важно именно вам — индекс пересчитается под ваш образ жизни.</p></div><button class="btn primary" id="saveProfile">${I("check")}Сохранить профиль</button></div>
+ <h2>Быстрые профили</h2><section class="presets stagger">${PRESETS.map(([n,ic],i)=>`<button class="card hover preset" data-preset="${i}"><span class="bubble" style="width:40px;height:40px;border-radius:13px">${I(ic)}</span>${n}</button>`).join("")}</section>
+ <div class="comfort-lay"><section class="card pad"><h2>Что для вас важно</h2><div class="crit">${CRITERIA.map(([c,ic],i)=>`<div><label for="cr${i}"><span class="bubble">${I(ic)}</span>${c}<b id="crv${i}">${S.prefs[c]||0}</b></label><input type="range" id="cr${i}" min="0" max="5" step="1" value="${S.prefs[c]||0}" data-crit="${esc(c)}" data-i="${i}"></div>`).join("")}</div></section>
+ <section class="dark-card live" id="live"></section></div>`}
+function initComfort(){document.querySelectorAll("input[data-crit]").forEach(r=>{const upd=()=>{r.style.setProperty("--p",(r.value/5*100)+"%");document.getElementById("crv"+r.dataset.i).textContent=r.value};upd();r.addEventListener("input",()=>{S.prefs[r.dataset.crit]=+r.value;upd();liveTop()})});liveTop(true)}
+function liveTop(first){const box=document.getElementById("live");if(!box)return;const top=[...DEVS].sort((a,b)=>personal(b)-personal(a)).slice(0,5);
+ const old={};box.querySelectorAll(".lrow").forEach(el=>old[el.dataset.id]=el.getBoundingClientRect().top);
+ box.innerHTML=`<div style="display:flex;align-items:center;gap:8px;position:relative"><div style="flex:1"><h2>Ваш топ прямо сейчас</h2><p>Меняется вместе со слайдерами</p></div><span style="width:70px;height:70px;display:block">${mascot("is-happy")}</span></div>
+ ${top.map((d,i)=>`<button class="lrow" data-open="${d.id}" data-id="${d.id}"><b style="width:22px">${["🥇","🥈","🥉","4","5"][i]}</b><span>${esc(d.name)}</span><em class="tnum">${personal(d)}%</em></button>`).join("")}`;
+ if(!first)box.querySelectorAll(".lrow").forEach(el=>{const o=old[el.dataset.id];if(o!==undefined){const dy=o-el.getBoundingClientRect().top;if(dy){el.style.transition="none";el.style.transform=`translateY(${dy}px)`;requestAnimationFrame(()=>{el.style.transition="";el.style.transform=""})}}else{el.style.animation="enter .35s both"}})}
+
+/* assistant */
+function pAssistant(){return `<div class="chat-lay"><section class="card chat"><div class="ch"><span style="width:52px;height:52px;display:block" id="headM">${mascot()}</span><div style="flex:1"><b>Доми · ИИ-помощник</b><small id="status">онлайн · отвечает мгновенно</small></div><button class="btn ghost sm" id="newChat">${I("refresh")}Новый диалог</button></div>
+ <div class="msgs" id="msgs" aria-live="polite"></div><div class="qchips" id="qchips"></div>
+ <form class="inbar" id="chatForm"><div class="inpill"><input id="ask" placeholder="Спросите Доми о любом ЖК…" autocomplete="off" aria-label="Вопрос Доми"><button class="send" aria-label="Отправить">${I("send")}</button></div></form></section>
+ <aside class="dark-card aside"><span id="sideM" style="display:block">${mascot("is-happy")}</span><span class="badge" style="background:#2B3A6B;color:#FFB37A;position:relative">● Локальный ИИ-режим</span>
+ <p style="position:relative">Доми отвечает по данным приложения: индексу комфорта, отзывам, ценам и вашему профилю. В настольной версии можно подключить Claude.</p>
+ <div style="display:flex;flex-direction:column;gap:8px;width:100%;margin-top:8px;position:relative">${["Подбери ЖК для семьи","Самый тихий ЖК","Что до 35 млн?","Сравни BI City Seoul и Highvill Astana","Что в районе Нура?"].map(q=>`<button class="lrow" data-ask="${esc(q)}">${I("sparkle")}<span>${q}</span></button>`).join("")}</div></aside></div>`}
+const CHIPS=["Подбери ЖК для семьи","Самый тихий ЖК","Что до 35 млн?"];
+function initChat(){const box=document.getElementById("msgs");if(!S.chat.length){S.chat.push({me:false,text:answer("").text})}
+ box.innerHTML="";S.chat.forEach(m=>addMsg(m.text,m.me,m.cards,false));chips(CHIPS);
+ document.getElementById("chatForm").onsubmit=e=>{e.preventDefault();ask(document.getElementById("ask").value)};
+ document.getElementById("newChat").onclick=()=>{S.chat=[];initChat()};setTimeout(()=>document.getElementById("ask")?.focus(),300)}
+function setMood(m){for(const id of ["headM","sideM"]){const s=document.querySelector("#"+id+" .mascot");if(!s)continue;s.classList.remove("think","talk","is-happy");if(m)s.classList.add(m)}}
+function addMsg(text,me,cards,anim=true){const box=document.getElementById("msgs");if(!box)return null;const el=document.createElement("div");el.className="msg "+(me?"me":"bot");if(!anim)el.style.animation="none";
+ el.innerHTML=me?`<div class="bub"></div>${avatar("super admin",34)}`:`<span class="mini">${mascot()}</span><div class="bub"></div>`;el.querySelector(".bub").textContent=text;box.appendChild(el);
+ if(cards&&cards.length)addCards(cards);box.scrollTop=box.scrollHeight;return el}
+function addCards(ids){const box=document.getElementById("msgs");const w=document.createElement("div");w.className="minicards";w.innerHTML=ids.slice(0,3).map(i=>{const d=DEVS[i];return `<button class="card hover mc" data-open="${i}"><canvas data-cover="${esc(d.name)}"></canvas><div><b>${esc(d.name)}</b><small>${d.buy} ₸ · ${d.district}</small></div>${ring(d.score,42,5)}</button>`}).join("");box.appendChild(w);paintCovers(w);animateIn(w);box.scrollTop=box.scrollHeight}
+function chips(list){const q=document.getElementById("qchips");if(q)q.innerHTML=list.map(c=>`<button class="chip" data-ask="${esc(c)}">${I("sparkle")}${esc(c)}</button>`).join("")}
+function ask(q){q=(q||"").trim();if(!q||S.busy)return;if(curRoute().name!=="assistant"){go("assistant");setTimeout(()=>ask(q),450);return}
+ const inp=document.getElementById("ask");if(inp)inp.value="";S.chat.push({me:true,text:q});addMsg(q,true);S.busy=true;setMood("think");document.getElementById("status").textContent="Доми думает…";
+ const box=document.getElementById("msgs");const ty=document.createElement("div");ty.className="msg bot";ty.innerHTML=`<span class="mini">${mascot("think")}</span><div class="bub typing"><i></i><i></i><i></i></div>`;box.appendChild(ty);box.scrollTop=box.scrollHeight;
+ const a=answer(q);setTimeout(()=>{ty.remove();const el=addMsg("",false);setMood("talk");const b=el.querySelector(".bub");let i=0;const step=Math.max(2,Math.round(a.text.length/90));
+  const tick=()=>{i=Math.min(a.text.length,i+step);b.textContent=a.text.slice(0,i);box.scrollTop=box.scrollHeight;if(i<a.text.length)setTimeout(tick,16);else{S.busy=false;S.chat.push({me:false,text:a.text,cards:a.cards});if(a.cards)addCards(a.cards);chips(a.chips||CHIPS);setMood(a.mood==="happy"?"is-happy":"");const st=document.getElementById("status");if(st)st.textContent="онлайн · отвечает мгновенно"}};tick()},650+Math.min(800,a.text.length*3))}
+function answer(q){const s=" "+q.toLowerCase()+" ",prefs=S.prefs,rank=(items,key)=>[...items].sort((a,b)=>(key?b.cats[key]-a.cats[key]:personal(b,prefs)-personal(a,prefs)));
+ if(!q.trim()||/(привет|здравств|салем|сәлем|hello|hi )/.test(s))return{text:`Привет! Я Доми — ваш ИИ-помощник по жилью в Астане 🏡\nЯ прочитал ${DATA.t} отзывов о ${DEVS.length} ЖК и подберу дом под ваш образ жизни.\n\nСпросите, например:\n• «Подбери ЖК для семьи»\n• «Самый тихий ЖК»\n• «Что до 35 млн?»\n• «Сравни BI City Seoul и Highvill Astana»`,mood:"happy"};
+ if(/(умеешь|помощь|help|что ты)/.test(s))return{text:"Я умею:\n• подбирать ЖК под ваш профиль комфорта\n• находить самый тихий, безопасный или удобный по транспорту\n• рассказывать о конкретном ЖК и его минусах\n• сравнивать два-три комплекса\n• фильтровать по бюджету — «до 40 млн»"};
+ const al={"сеул":"BI City Seoul","токио":"BI City Tokyo","хайвил":"Highvill Astana","опер":"Grand Opera","нова":"Nova City","шанырак":"Shanyrak Park","ривьер":"Riviera Esil"};
+ let found=DEVS.filter(d=>s.includes(d.name.toLowerCase())).sort((a,b)=>b.name.length-a.name.length);found=found.filter(d=>!found.some(o=>o!==d&&o.name.toLowerCase().includes(d.name.toLowerCase())&&s.split(o.name.toLowerCase()).length>s.split(d.name.toLowerCase()).length-1));
+ for(const[k,n]of Object.entries(al))if(s.includes(k)&&!found.some(d=>d.name===n))found.push(byName(n));
+ found.sort((a,b)=>s.indexOf(a.name.toLowerCase())-s.indexOf(b.name.toLowerCase()));
+ if(found.length>=2){const it=found.slice(0,3),lines=CATS.map(c=>{const v=it.map(d=>d.cats[c]),m=Math.max(...v);return `• ${c==="Сервис"?"сервис УК":c.toLowerCase()}: ${v.map(x=>x+(x===m&&v.filter(y=>y===m).length===1?" 🏆":"")).join("   ")}`});const w=it.reduce((a,b)=>b.score>a.score?b:a);
+  return{text:`Сравнение ${it.map(d=>d.name).join(" · ")}:\n${lines.join("\n")}\n\nПо сумме критериев выигрывает ${w.name} ✨`,cards:it.map(d=>d.id)}}
+ if(found.length===1){const d=found[0],r=REVS.filter(x=>x.dev===d.name).sort((a,b)=>b.rating-a.rating)[0];return{text:`${d.name} — ${d.klass}, ${d.district} район.\nИндекс комфорта: ${d.score}/100 · ${d.mood}.\nСильные стороны: ${d.pros.join(", ")||"—"}.\nНа что обратить внимание: ${d.cons.join(", ")||"нет явных минусов в отзывах"}.${r?`\n\nИз отзывов: «${r.text.slice(0,140)}${r.text.length>140?"…":""}» — ${r.author}, ★${r.rating}`:""}`,cards:[d.id]}}
+ let m=s.match(/(\d+[.,]?\d*)\s*(млн|mln|миллион)/),budget=m?parseFloat(m[1].replace(",",".")):(/(дешев|недорог|бюджет|арзан)/.test(s)?30:0);
+ if(budget){const it=rank(DEVS.filter(d=>d.buyM<=budget)).slice(0,4);if(!it.length){const c=[...DEVS].sort((a,b)=>a.buyM-b.buyM)[0];return{text:`В пределах ${budget} млн ₸ ничего не нашёл. Самый доступный вариант — ${c.name} (${c.buy} ₸).`,cards:[c.id]}}
+  return{text:`Варианты до ${budget} млн ₸ — отсортировал по комфорту для вас:\n${it.map((d,i)=>`${i+1}. ${d.name} — ${d.buy} ₸ · ${d.score}/100`).join("\n")}`,cards:it.map(d=>d.id)}}
+ const dmap={"есил":"Есильский","алматин":"Алматинский","сарыарк":"Сарыаркинский","байконур":"Байконурский","нура":"Нура"};
+ for(const[k,v]of Object.entries(dmap))if(s.includes(k)){const it=rank(DEVS.filter(d=>d.district===v)).slice(0,5);return{text:`ЖК в районе «${v}»:\n${it.map(d=>`• ${d.name} — ${d.score}/100`).join("\n")}`,cards:it.slice(0,3).map(d=>d.id)}}
+ const fam=/(сем|дет|ребён|ребен|family|kids|бала)/.test(s);
+ const cw={"Тишина":["тих","тиш","шум","спокой"],"Транспорт":["транспорт","метро","lrt","добира","центр"],"Безопасность":["безопас","охран","камер"],"Двор":["двор","площадк","парков","зелен"],"Сервис":["сервис"," ук","управля","кск","чист"]};
+ const cat=fam?null:Object.keys(cw).find(c=>cw[c].some(w=>s.includes(w)));
+ if(cat){const it=rank(DEVS,cat).slice(0,3),r=REVS.find(x=>x.dev===it[0].name&&cw[cat].some(w=>x.text.toLowerCase().includes(w.trim()))&&x.rating>=4);
+  return{text:`Лучшие ЖК по критерию «${cat==="Сервис"?"сервис УК":cat.toLowerCase()}»:\n${it.map((d,i)=>`${i+1}. ${d.name} — ${d.cats[cat]}/100 (${d.district})`).join("\n")}${r?`\n\nИз отзывов: «${r.text.slice(0,130)}…» — ${r.author}, ★${r.rating}`:""}`,cards:it.map(d=>d.id)}}
+ if(fam||/(лучш|топ|посовет|рекоменд|подбер|подойд|best|recommend|таңда)/.test(s)){const p=fam?{"Двор и условия для детей":5,"Безопасность":5,"Школы и детские сады":4,"Тишина":3}:prefs,it=[...DEVS].sort((a,b)=>personal(b,p)-personal(a,p)).slice(0,3);
+  return{text:`${fam?"Для семьи с детьми":"По вашему профилю комфорта"} лучше всего подходят:\n${it.map((d,i)=>`${i+1}. ${d.name} — совпадение ${personal(d,p)}% · ${d.pros.slice(0,2).join(", ")}`).join("\n")}`,cards:it.map(d=>d.id),mood:"happy"}}
+ return{text:"Пока не уверен, что понял вопрос 🤔 Попробуйте спросить по-другому или выберите подсказку ниже.",chips:["Подбери ЖК для семьи","Самый тихий ЖК","Что до 35 млн?","Что умеешь?"]}}
+
+function pReviews(){return `<div class="head"><div><h1>Отзывы</h1><p class="sub">Все сохранённые отзывы с указанием источника.</p></div></div>
+ <section class="card filters"><div class="frow"><label class="field">${I("search")}<input id="rq" placeholder="Поиск по тексту, автору или ЖК" value="${esc(S.revQ)}" autocomplete="off"></label>
+ <div class="seg" id="rateSeg"><span class="knob"></span>${["Все","★5","★4","★≤3"].map((l,i)=>`<button data-rate="${i}" class="${i===S.revR?"on":""}">${l}</button>`).join("")}</div></div></section>
+ <div class="found tnum" id="rfound"></div><section class="grid stagger" id="rgrid" style="grid-template-columns:repeat(auto-fill,minmax(380px,1fr))"></section>`}
+function fillReviews(){const g=document.getElementById("rgrid");if(!g)return;const q=S.revQ.trim().toLowerCase();let it=REVS.filter(r=>!q||(r.text+" "+r.author+" "+r.dev).toLowerCase().includes(q));
+ it=it.filter(r=>[()=>true,()=>r.rating===5,()=>r.rating===4,()=>r.rating<=3][S.revR]());document.getElementById("rfound").textContent=`Найдено: ${it.length}`;
+ g.innerHTML=it.length?it.slice(0,40).map(r=>revCard(r)).join(""):emptyState("Ничего не нашлось","Попробуйте другой запрос.");requestAnimationFrame(placeKnobs)}
+
+/* ---------- palette ---------- */
+function openPalette(){if(document.getElementById("pal"))return;const o=document.createElement("div");o.className="overlay";o.id="pal";
+ o.innerHTML=`<div class="card pal" role="dialog" aria-label="Быстрый поиск"><label class="field">${I("search")}<input id="pq" placeholder="Поиск по ЖК, разделам и действиям…" autocomplete="off"><kbd>Esc</kbd></label><div class="list" id="plist"></div></div>`;
+ document.body.appendChild(o);const inp=o.querySelector("#pq");let items=[],sel=0;
+ const fill=()=>{const q=inp.value.trim().toLowerCase();const ds=DEVS.filter(d=>!q||(d.name+" "+d.district+" "+d.address).toLowerCase().includes(q)).slice(0,6);
+  const pages=[...NAV.map(n=>n[0]),"reviews"].filter(r=>!q||t(r).toLowerCase().includes(q));items=[...ds.map(d=>({k:"d",d})),...pages.map(r=>({k:"p",r})),...(q.length>2?[{k:"a",q:inp.value}]:[])];sel=0;
+  let h="",last="";items.forEach((it,i)=>{const grp=it.k==="d"?"Жилые комплексы":it.k==="p"?"Разделы":"ИИ-помощник";if(grp!==last){h+=`<div class="grp">${grp.toUpperCase()}</div>`;last=grp}
+   h+=it.k==="d"?`<button class="it" data-i="${i}">${I("building")}<span>${esc(it.d.name)}</span><small>${it.d.district} · ${it.d.score}/100</small></button>`:it.k==="p"?`<button class="it" data-i="${i}">${I(NAV.find(n=>n[0]===it.r)?.[1]||"chat")}<span>${t(it.r)}</span></button>`:`<button class="it" data-i="${i}">${I("sparkle")}<span>Спросить Доми: «${esc(it.q)}»</span></button>`});
+  o.querySelector("#plist").innerHTML=h||`<div class="grp">НИЧЕГО НЕ НАЙДЕНО</div>`;mark()};
+ const mark=()=>o.querySelectorAll(".it").forEach(b=>b.classList.toggle("on",+b.dataset.i===sel));
+ const act=i=>{const it=items[i];if(!it)return;close();if(it.k==="d")go("complex-"+it.d.id);else if(it.k==="p")go(it.r);else ask(it.q)};
+ const close=()=>o.remove();
+ inp.addEventListener("input",fill);inp.addEventListener("keydown",e=>{if(e.key==="ArrowDown"){sel=Math.min(items.length-1,sel+1);mark();e.preventDefault()}else if(e.key==="ArrowUp"){sel=Math.max(0,sel-1);mark();e.preventDefault()}else if(e.key==="Enter"){act(sel)}else if(e.key==="Escape")close()});
+ o.addEventListener("click",e=>{const b=e.target.closest(".it");if(b)act(+b.dataset.i);else if(e.target===o)close()});fill();setTimeout(()=>inp.focus(),30)}
+
+/* ---------- login ---------- */
+function showLogin(){S.loggedIn=false;const el=document.createElement("div");el.className="login";el.id="login";
+ el.innerHTML=`<section class="lart"><div class="brand" style="position:relative"><span class="mark" style="width:44px;height:44px">${I("home")}</span><b style="font-size:20px">HouseCheck AI</b></div>${mascot("is-happy")}
+ <h2 style="position:relative">Найдите дом,<br>в котором хочется жить</h2>${[["star","Индекс комфорта по отзывам жителей"],["map","Интерактивная карта Астаны"],["sparkle","ИИ-помощник Доми 24/7"]].map(([ic,l])=>`<div class="feat" style="position:relative"><span class="bubble">${I(ic)}</span>${l}</div>`).join("")}</section>
+ <section class="lform"><form id="lf" novalidate><h1>С возвращением!</h1><p class="sub">Войдите, чтобы открыть рабочую область.</p><label for="lu">Логин</label><input id="lu" value="super_admin" autocomplete="username"><label for="lp">Пароль</label><input id="lp" type="password" placeholder="super_admin" autocomplete="current-password">
+ <div class="err" id="lerr"></div><button class="btn primary lg">${I("next")}Войти</button><p class="sub" style="font-size:12px">Демо-вход: super_admin / super_admin</p></form></section>`;
+ document.body.appendChild(el);setTimeout(()=>el.querySelector("#lp").focus(),100);
+ el.querySelector("#lf").onsubmit=e=>{e.preventDefault();const u=el.querySelector("#lu").value.trim(),p=el.querySelector("#lp").value;
+  if(u==="super_admin"&&p==="super_admin"){S.loggedIn=true;el.classList.add("leaving");setTimeout(()=>el.remove(),480);if(!VALID.includes(location.hash.slice(1))&&!/^#complex-/.test(location.hash))location.hash="home";else render();renderShell();setTimeout(()=>toast("Добро пожаловать в HouseCheck AI!"),400)}
+  else{el.querySelector("#lerr").textContent="Неверный логин или пароль. Подсказка: super_admin / super_admin";const f=el.querySelector("form");f.classList.remove("shake");void f.offsetWidth;f.classList.add("shake")}}}
+
+/* ---------- events ---------- */
+document.addEventListener("click",e=>{const el=e.target.closest("[data-fav],[data-cmp],[data-uncmp],[data-open],[data-go],[data-toast],[data-district],[data-klass],[data-mode],[data-rate],[data-preset],[data-ask],[data-pinsel],[data-theme-i],[data-lang],#openPal,#logout,#clearCmp,#saveNote,#saveProfile");if(!el)return;
+ if(el.dataset.fav!==undefined){e.stopPropagation();const id=+el.dataset.fav,on=!S.fav.has(id);on?S.fav.add(id):S.fav.delete(id);save();toast(on?"Добавлено в избранное":"Убрано из избранного");updateCounts("favorites");
+  if(el.classList.contains("fav")){el.classList.toggle("on",on);el.classList.remove("pop");void el.offsetWidth;el.classList.add("pop");if(curRoute().name==="favorites"&&!on)setTimeout(render,250)}else render();return}
+ if(el.dataset.cmp!==undefined){e.stopPropagation();const id=+el.dataset.cmp;if(S.cmp.has(id))S.cmp.delete(id);else{if(S.cmp.size>=3){toast("Можно сравнить максимум три ЖК",false);return}S.cmp.add(id);toast("Добавлено в сравнение")}save();updateCounts("compare");
+  if(curRoute().name==="catalog")fillCatalog();else render();return}
+ if(el.dataset.uncmp!==undefined){e.stopPropagation();S.cmp.delete(+el.dataset.uncmp);save();updateCounts("compare");render();return}
+ if(el.dataset.open!==undefined){go("complex-"+el.dataset.open);return}
+ if(el.dataset.go!==undefined){go(el.dataset.go);return}
+ if(el.dataset.toast){toast(el.dataset.toast,false);return}
+ if(el.dataset.district!==undefined){S.district=el.dataset.district;document.querySelectorAll("[data-district]").forEach(c=>c.classList.toggle("on",c.dataset.district===S.district));fillCatalog();return}
+ if(el.dataset.klass!==undefined){S.klass=S.klass===el.dataset.klass?"":el.dataset.klass;document.querySelectorAll("[data-klass]").forEach(c=>c.classList.toggle("on",c.dataset.klass===S.klass));fillCatalog();return}
+ if(el.dataset.mode!==undefined){S.mode=+el.dataset.mode;segOn(el);fillCatalog();return}
+ if(el.dataset.rate!==undefined){S.revR=+el.dataset.rate;segOn(el);fillReviews();return}
+ if(el.dataset.preset!==undefined){const p=PRESETS[+el.dataset.preset][2];CRITERIA.forEach(([c])=>S.prefs[c]=p[c]||0);document.querySelectorAll(".preset").forEach(b=>b.classList.toggle("on",b===el));
+  document.querySelectorAll("input[data-crit]").forEach(r=>{r.value=S.prefs[r.dataset.crit]||0;r.dispatchEvent(new Event("input"))});return}
+ if(el.dataset.ask!==undefined){ask(el.dataset.ask);return}
+ if(el.dataset.pinsel!==undefined){selectPin(+el.dataset.pinsel);return}
+ if(el.dataset.themeI!==undefined){const i=+el.dataset.themeI;if(i===2)delete document.documentElement.dataset.theme;else document.documentElement.dataset.theme=i?"dark":"light";store.set("theme",i);segOn(el);return}
+ if(el.dataset.lang!==undefined){S.lang=el.dataset.lang;store.set("lang",S.lang);renderShell();render();return}
+ if(el.id==="openPal"){openPalette();return}
+ if(el.id==="logout"){showLogin();return}
+ if(el.id==="clearCmp"){S.cmp.clear();save();updateCounts("compare");fillCatalog();return}
+ if(el.id==="saveNote"){const id=curRoute().id;S.notes[id]=document.getElementById("note").value;save();toast("Заметка сохранена");return}
+ if(el.id==="saveProfile"){save();toast("Профиль комфорта сохранён");return}});
+function segOn(btn){const s=btn.closest(".seg");s.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===btn));placeKnobs()}
+document.addEventListener("keydown",e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();if(S.loggedIn)openPalette()}
+ if(e.key==="Enter"&&e.target.matches?.("article[data-open]"))go("complex-"+e.target.dataset.open)});
+document.addEventListener("input",e=>{if(e.target.id==="q"){S.q=e.target.value;clearTimeout(window._qt);window._qt=setTimeout(fillCatalog,140)}if(e.target.id==="rq"){S.revQ=e.target.value;clearTimeout(window._rt);window._rt=setTimeout(fillReviews,140)}});
+document.addEventListener("change",e=>{if(e.target.id==="sort"){S.sort=+e.target.value;fillCatalog()}});
+window.addEventListener("resize",()=>{placeKnobs();clearTimeout(window._rz);window._rz=setTimeout(()=>paintCovers(),150)});
+setInterval(()=>{const f=document.getElementById("floater");if(!f||f.hidden)return;f.classList.add("show");setTimeout(()=>f.classList.remove("show"),3800)},9000);
+setTimeout(()=>document.getElementById("floater")?.classList.add("show"),1800);setTimeout(()=>document.getElementById("floater")?.classList.remove("show"),5600);
+
+/* ---------- boot ---------- */
+{const th=store.get("theme",2);if(th===1)document.documentElement.dataset.theme="dark";else if(th===0)document.documentElement.dataset.theme="light"}
+window.removeEventListener("hashchange",render);
+const baseRender=render;
+render=function(){baseRender();const r=curRoute().name;if(r==="catalog")fillCatalog();if(r==="reviews")fillReviews();requestAnimationFrame(placeKnobs)};
+window.addEventListener("hashchange",()=>render());
+renderShell();
+showLogin();
+</script>
